@@ -1,10 +1,8 @@
-from p3_image_analyse import speech_recognize_init, final_realize_IA, faster_whisper_recognize
-from p3_shoot import final_realize_shoot, voice_announce
-from speed_transcription.ost_fast import trans_init, get_transcribe
+from p3_image_analyse import final_realize_IA, faster_whisper_recognize
+from p3_shoot import final_realize_shoot, voice_announce, speech_recognize_init
 
 
 def final_main():
-    trans_init("output.wav")
     choose1 = "智慧拍照"
     choose2 = "环境识别"
     choose3 = "退出"

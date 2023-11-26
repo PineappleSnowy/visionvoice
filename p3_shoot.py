@@ -16,6 +16,15 @@ window_name = "Face Detection"
 detect_sign = 0
 const_face_list = []
 width_, height_ = [0, 0]
+r = sr.Recognizer()
+
+
+def speech_recognize_init():
+    r.non_speaking_duration = 0.1
+    r.pause_threshold = 0.1
+    with sr.Microphone() as mic:
+        r.adjust_for_ambient_noise(mic, duration=1)
+    return r
 
 
 def detect_face(img):
@@ -185,4 +194,5 @@ def final_realize_shoot(r):
 
 
 if __name__ == "__main__":
-    final_realize_shoot()
+    speech_recognize_init()
+    final_realize_shoot(r)

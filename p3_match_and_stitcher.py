@@ -32,6 +32,6 @@ def calc_equal(match_sequence, threshold=20, percentage=0.05):
 
 
 if __name__ == "__main__":
-    img_1 = cv2.imread("image_data/image_2.jpg")  # queryImage
-    img_2 = cv2.imread("image_data/image_3.jpg")  # trainImage
-    print(judge_equal_realize(img_1, img_2))
+    img_1 = cv2.imread("image_data/image_0.jpg")  # queryImage
+    img_2 = cv2.imread("image_data/image_1.jpg")  # trainImage
+    print("judge_equal_result:", judge_equal_realize(img_1, img_2))
