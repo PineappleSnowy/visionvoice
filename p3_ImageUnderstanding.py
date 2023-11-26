@@ -28,6 +28,7 @@ domain = ""
 temp_answer_list = []
 answer_lock = threading.Lock()
 judge_ws_close = False
+voice_thread = threading.Thread()
 
 
 class WsParam(object):
@@ -235,6 +236,7 @@ def spark_chat(img_data_list: list[str]) -> str:
     question = checklen(getText("user", Input))
     voice_announce_thread()
     main_chat(appid, api_key, api_secret, spark_url, question)
+    voice_thread.join()
     return answer
 
 
@@ -252,6 +254,7 @@ def voice_announce_block():
 
 
 def voice_announce_thread():
+    global voice_thread
     voice_thread = threading.Thread(target=voice_announce_block, args=())
     voice_thread.start()
 

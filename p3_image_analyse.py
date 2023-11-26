@@ -5,7 +5,7 @@ import cv2
 from faster_whisper import WhisperModel
 from p3_ImageUnderstanding import image_understanding, spark_chat
 from p3_match_and_stitcher import judge_equal_realize
-from p3_shoot import voice_announce
+from p3_shoot import voice_announce, speech_recognize_init
 
 input_info_grace = "我拍了一张图片，请用优美的自然语言对它进行描述，字数在三十到五十字之间。请你仅仅描述图片，不要输出别的话。这张图片的特征有："
 input_info_object = "请以第二人称，用客观的自然语言描述一下我当前所处的环境，字数在五十字到一百字之间。请你仅仅描述我所处的环境，不要输出别的话。我所处的环境的特征有："
@@ -20,20 +20,17 @@ model = WhisperModel(model_size, device="cpu", compute_type="int8")
 r = sr.Recognizer()
 
 
-def speech_recognize_init():
-    r.non_speaking_duration = 0.1
-    r.pause_threshold = 0.1
-    with sr.Microphone() as mic:
-        r.adjust_for_ambient_noise(mic, duration=1)
-    return r
-
-def faster_whisper_recognize(out_audio, initial_prompt_):
+def speech_listen(filepath):
     print("录音开始")
     with sr.Microphone() as mic:
         data = r.listen(mic)
     print("录音结束")
-    with open("output.wav", "wb") as f:
+    with open(filepath, "wb") as f:
         f.write(data.get_wav_data())
+
+
+def faster_whisper_recognize(out_audio, initial_prompt_):
+    speech_listen("output.wav")
     print("transcribe_start")
     start_ = time.time()
     segments, info = model.transcribe(out_audio, beam_size=5, language="zh",
@@ -70,7 +67,7 @@ def image_catch():
         ret, image = cap.read()
         if not ret:
             break
-        if num >= 2:
+        if num >= 1:
             if judge_equal_realize(image, trainImage):
                 break
         flip_image = cv2.flip(image, 1)
@@ -79,7 +76,6 @@ def image_catch():
             temp = time.time()
             cv2.imwrite(f"image_data/image_{num}.jpg", image)
             track_catch += 1
-            # frame_list.append(image)
             num += 1
         cv2.waitKey(3)
     finish = time.time()
@@ -125,5 +121,5 @@ def final_realize_IA():
 
 
 if __name__ == '__main__':
-    speech_recognize_init()
+    r = speech_recognize_init()
     final_realize_IA()
