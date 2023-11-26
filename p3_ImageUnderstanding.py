@@ -217,18 +217,21 @@ def image_understanding(img_name_prefix: str, img_type: str, max_img_amount: int
     return answer_list
 
 
-def spark_chat(img_data_list: list[str]) -> str:
+def spark_chat(img_data_list: list[str], curr_scene: str) -> str:
     """
     initial_prompt: "我在我身处的环境中拍了几张图片，请你根据这些图片的信息用客观真实的语言描述一下我当前所处的环境。以下是这些图片的信息。"
 
     :param img_data_list: 包含对逐张图片的描述的字符串列表
+    :param curr_scene: 当前所处场景的类别
     :return: 对环境信息的综述
     """
     global domain
     domain = "generalv3"
     temp_answer_list.clear()
-    Input = "我在我身处的环境中拍了几张图片，这几张图片可能有重复和矛盾的部分，请筛查并提取真实简练的图片信息。\
-    请你根据提取后的图片信息用客观真实的语言描述一下我当前所处的环境，100字左右。\
+    Input = f"我当前身处的场景是{curr_scene}。\
+    同时，我在我身处的环境中拍了几张图片，这几张图片可能有重复和矛盾的部分，请筛查并提取真实简练的图片信息。\
+    请你根据我提供的场景信息和提取后的图片信息用客观真实的语言描述一下我当前所处的环境，100字左右。\
+    你说的话里不能包含英文。\
     请你仅仅描述我当前所处的环境，不要输出别的话。以下是这些图片的信息。"
     for i, num in zip(img_data_list, range(len(img_data_list))):
         zh_num = num_to_zh(num + 1)

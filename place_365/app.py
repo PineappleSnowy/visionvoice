@@ -3,12 +3,12 @@ import cv2
 import torch
 from torchvision import transforms
 from PIL import Image
-import gradio as gr
 import numpy as np
+# import gradio as gr
 
 
 class Place365cls:
-    def __init__(self, model_pth='place365.pth'):
+    def __init__(self, model_pth='place_365/place365.pth'):
         # 初始化模型
         network = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18')
         network.fc = torch.nn.Linear(512, 365)
@@ -27,7 +27,7 @@ class Place365cls:
 
         # 初始化类别名称
         self.id2categories_name = dict()
-        with open('categories_places365.txt') as f:
+        with open('place_365/categories_places365.txt') as f:
             lines = f.readlines()
             for line in lines:
                 category_name, id = line.split(' ')
@@ -66,16 +66,15 @@ def predict(image):
     return result
 
 
-def gradio_realize():
-    interface = gr.Interface(fn=predict, inputs="image",
-                             outputs=gr.Label(),
-                             title="Place365 classification"
-                             )
-    interface.launch()
+# def gradio_realize():
+#     interface = gr.Interface(fn=predict, inputs="image",
+#                              outputs=gr.Label(),
+#                              title="Place365 classification"
+#                              )
+#     interface.launch()
 
 
-def predict_realize(img_file_path: str) -> tuple:
-    image = cv2.imread(img_file_path)
+def predict_realize(image: cv2.Mat) -> tuple:
     start = time.time()
     result = predict(image)
     result_list = list(result.items())
