@@ -30,10 +30,10 @@ class Place365cls:
         with open('place_365/categories_places365.txt') as f:
             lines = f.readlines()
             for line in lines:
-                category_name, id = line.split(' ')
-                id = int(id)
+                category_name, id_ = line.split(' ')
+                id_ = int(id_)
                 category_name = category_name[3:]
-                self.id2categories_name[id] = category_name
+                self.id2categories_name[id_] = category_name
 
     def predict(self, img, top_n=5):
         # 如果图像是numpy.ndarray类型，将其转换为PIL Image
@@ -74,6 +74,11 @@ def predict(image):
 #     interface.launch()
 
 
+def calc_most_proba_scene(scene_list_):
+    sorted_scene = sorted(scene_list_, key=lambda x: x[1])
+    return sorted_scene[0][0]
+
+
 def predict_realize(image: cv2.Mat) -> tuple:
     start = time.time()
     result = predict(image)
@@ -85,5 +90,6 @@ def predict_realize(image: cv2.Mat) -> tuple:
 
 
 if __name__ == "__main__":
-    best_fit_ = predict_realize("../picture.jpg")
+    image_ = cv2.imread("../picture.jpg")
+    best_fit_ = predict_realize(image_)
     print(best_fit_)

@@ -6,7 +6,7 @@ from faster_whisper import WhisperModel
 from p3_ImageUnderstanding import image_understanding, spark_chat
 from p3_match_and_stitcher import judge_equal_realize
 from p3_shoot import voice_announce, speech_recognize_init
-from place_365.app import predict_realize
+from place_365.app import predict_realize, calc_most_proba_scene
 
 
 input_info_grace = "我拍了一张图片，请用优美的自然语言对它进行描述，字数在三十到五十字之间。请你仅仅描述图片，不要输出别的话。这张图片的特征有："
@@ -21,11 +21,6 @@ model_size = "../../face_detect/faster-whisper-webui/models/faster-whisper/faste
 model = WhisperModel(model_size, device="cpu", compute_type="int8")
 r = sr.Recognizer()
 scene_list = []
-
-
-def calc_most_proba_scene(scene_list_):
-    sorted_scene = sorted(scene_list_, key=lambda x: x[1])
-    return sorted_scene[0][0]
 
 
 def speech_listen(filepath):

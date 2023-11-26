@@ -191,7 +191,7 @@ def image_understanding(img_name_prefix: str, img_type: str, max_img_amount: int
     """
     notice: 传入的图片文件必须是前缀+数字+类型的命名形式，且需以start_index开始连续命名，如"picture_0.jpg"、"images/picture_1.jpg"
 
-    initial_prompt: "请用客观真实的语言描述一下这幅图片包含的信息"
+    initial_prompt: "请你用客观、真实、简洁的语言概括这幅图片所包含的信息。"
 
     :param img_name_prefix: 传入的图片文件的前缀，前缀可包含文件路径，如图片"images/img_1.jpg"的前缀为"images/img_"
     :param img_type: 图片类型，如"jpg"
@@ -219,7 +219,11 @@ def image_understanding(img_name_prefix: str, img_type: str, max_img_amount: int
 
 def spark_chat(img_data_list: list[str], curr_scene: str) -> str:
     """
-    initial_prompt: "我在我身处的环境中拍了几张图片，请你根据这些图片的信息用客观真实的语言描述一下我当前所处的环境。以下是这些图片的信息。"
+    initial_prompt: f"我当前身处的场景是{curr_scene}。\
+    同时，我在我身处的环境中拍了几张图片，这几张图片可能有重复和矛盾的部分，请筛查并提取真实简练的图片信息。\
+    请你根据我提供的场景信息和提取后的图片信息用客观真实的语言描述一下我当前所处的环境，100个字左右。\
+    你说的话里不能包含英文。\
+    请你仅仅描述我当前所处的环境，不要输出别的话。以下是这些图片的信息。"
 
     :param img_data_list: 包含对逐张图片的描述的字符串列表
     :param curr_scene: 当前所处场景的类别
@@ -230,7 +234,7 @@ def spark_chat(img_data_list: list[str], curr_scene: str) -> str:
     temp_answer_list.clear()
     Input = f"我当前身处的场景是{curr_scene}。\
     同时，我在我身处的环境中拍了几张图片，这几张图片可能有重复和矛盾的部分，请筛查并提取真实简练的图片信息。\
-    请你根据我提供的场景信息和提取后的图片信息用客观真实的语言描述一下我当前所处的环境，100字左右。\
+    请你根据我提供的场景信息和提取后的图片信息用客观真实的语言描述一下我当前所处的环境，100个字左右。\
     你说的话里不能包含英文。\
     请你仅仅描述我当前所处的环境，不要输出别的话。以下是这些图片的信息。"
     for i, num in zip(img_data_list, range(len(img_data_list))):
@@ -264,4 +268,3 @@ def voice_announce_thread():
 
 if __name__ == '__main__':
     data_list = image_understanding("img_", "jpg", 3, 0)
-    description = spark_chat(data_list)
