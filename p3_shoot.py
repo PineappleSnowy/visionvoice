@@ -147,7 +147,7 @@ def realize_face():
         ret, image = cap.read()
         if not ret:
             break
-        # image = cv2.flip(image, 0)
+        image = cv2.flip(image, 1)
         dst_image = image.copy()
         if detect_sign % 10 == 0:
             const_face_list.clear()
@@ -159,7 +159,6 @@ def realize_face():
         cv2.imshow(window_name, image)
         if cv2.waitKey(3) == 32:
             judge_shoot.value = True
-            break
         if judge_shoot.value:
             cv2.imshow(window_name, dst_image)
             while True:
@@ -172,14 +171,14 @@ def realize_face():
     cv2.destroyAllWindows()
 
 
-def final_realize_shoot(r):
+def final_realize_shoot(r_):
     voice_announce("欢迎开启智慧拍照")
     realize_face_thread = threading.Thread(target=realize_face)
 
     realize_face_thread.start()
 
     realize_speech1_process = multiprocessing.Process(target=realize_speech,
-                                                      args=("拍照", r, judge_shoot, judge_announce_start),
+                                                      args=("拍照", r_, judge_shoot, judge_announce_start),
                                                       daemon=True)
 
     realize_announce_thread = threading.Thread(target=realize_announce, daemon=True)
