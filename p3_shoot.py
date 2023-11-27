@@ -118,7 +118,7 @@ def realize_speech(goal, r_, judge_shoot_, announce_start_judge):
     announce_start_judge.value = True
     while True:
         with sr.Microphone() as mic_:
-            data = r_.listen(mic_)
+            data = r_.listen(mic_, phrase_time_limit=8)
         try:
             with open("output.wav", "wb") as f:
                 f.write(data.get_wav_data())

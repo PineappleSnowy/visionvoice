@@ -18,7 +18,7 @@ def final_main():
                 break
             elif choose2 in segment.text:
                 final_realize_IA()
-                voice_announce("您可以说退出以退出程序，或者继续选择服务")
+                voice_announce(f"您可以说退出以退出程序，或者继续选择服务。1、{choose1}。2、{choose2}")
                 break
             elif choose3 in segment.text:
                 voice_announce("退出成功")

@@ -92,7 +92,7 @@ def faster_whisper_speech(goal):
             for segment in segments:
                 print(f"text: {segment.text}")
                 if goal in segment.text:
-                    voice_announce("好的。听到录像开始后请缓慢地转动镜头，总时长十五秒。我将根据镜头的画面识别当前环境。")
+                    voice_announce("好的。听到录像开始后请缓慢地转动镜头，总时长二十四秒。我将根据镜头的画面识别当前环境。当画面重复时我会自动停止")
                     return True
         except Exception:
             continue
