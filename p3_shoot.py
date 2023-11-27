@@ -9,7 +9,6 @@ import multiprocessing
 
 
 judge_shoot = multiprocessing.Value('b', False)
-judge_announce_start = multiprocessing.Value('b', False)
 judge_announce = False
 direction = 0
 window_name = "Face Detection"
@@ -112,10 +111,9 @@ def realize_announce():
     judge_announce = True
 
 
-def realize_speech(goal, r_, judge_shoot_, announce_start_judge):
+def realize_speech(goal, r_, judge_shoot_):
     model_size = "../../face_detect/faster-whisper-webui/models/faster-whisper/faster-whisper-tiny"
     model_ = WhisperModel(model_size, device="cpu", compute_type="int8")
-    announce_start_judge.value = True
     while True:
         with sr.Microphone() as mic_:
             data = r_.listen(mic_, phrase_time_limit=8)
@@ -178,16 +176,13 @@ def final_realize_shoot(r_):
     realize_face_thread.start()
 
     realize_speech1_process = multiprocessing.Process(target=realize_speech,
-                                                      args=("拍照", r_, judge_shoot, judge_announce_start),
+                                                      args=("拍照", r_, judge_shoot),
                                                       daemon=True)
 
     realize_announce_thread = threading.Thread(target=realize_announce, daemon=True)
 
     realize_speech1_process.start()
-    while True:
-        if judge_announce_start.value:
-            realize_announce_thread.start()
-            break
+    realize_announce_thread.start()
 
     realize_face_thread.join()
 
