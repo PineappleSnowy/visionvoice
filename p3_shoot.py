@@ -175,13 +175,13 @@ def final_realize_shoot(r_):
 
     realize_face_thread.start()
 
-    realize_speech1_process = multiprocessing.Process(target=realize_speech,
+    realize_speech_process = multiprocessing.Process(target=realize_speech,
                                                       args=("拍照", r_, judge_shoot),
                                                       daemon=True)
 
     realize_announce_thread = threading.Thread(target=realize_announce, daemon=True)
 
-    realize_speech1_process.start()
+    realize_speech_process.start()
     realize_announce_thread.start()
 
     realize_face_thread.join()
