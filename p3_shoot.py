@@ -8,6 +8,7 @@ import time
 import multiprocessing
 from p3_ImageUnderstanding import image_understanding, voice_announce_thread
 
+
 judge_shoot = multiprocessing.Value('b', False)
 judge_announce = False
 direction = 0
@@ -112,7 +113,7 @@ def realize_announce():
 
 
 def realize_speech(goal, r_, judge_shoot_):
-    model_size = "../../face_detect/faster-whisper-webui/models/faster-whisper/faster-whisper-tiny"
+    model_size = "../../faster-whisper-webui/models/faster-whisper/faster-whisper-tiny"
     model_ = WhisperModel(model_size, device="cpu", compute_type="int8")
     voice_announce("欢迎开启智慧拍照")
     while not judge_shoot_.value:

@@ -1,11 +1,10 @@
 import multiprocessing
 import time
-
 import cv2
-
 from p3_image_analyse import final_realize_IA, faster_whisper_recognize
 from p3_shoot import final_realize_shoot, voice_announce, speech_recognize_init
 from pyqt_UI import qt_process
+
 
 value_ = multiprocessing.Value("i", 0)
 

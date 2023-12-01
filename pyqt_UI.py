@@ -1,9 +1,7 @@
 import multiprocessing
-import threading
-import time
 import sys
 from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QImage, QPixmap, QFont
+from PyQt5.QtGui import QPixmap, QFont
 import cv2
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
 
@@ -13,8 +11,6 @@ class MyWindow(QMainWindow):
     def update_frame(self):
         self.pixmap = QPixmap("image_data/picture.jpg")
         self.label.setPixmap(self.pixmap)
-        # self.label.resize(self.pixmap.width(), self.pixmap.height())
-        # self.label.move(700, 300)
 
     def __init__(self, func1, name1, func2, name2, func3, name3, windowTitle):
         super().__init__()
@@ -81,30 +77,3 @@ if __name__ == "__main__":
     height, width, channel = image2.shape
     image = cv2.resize(image, (int(width), int(height)))
     cv2.imwrite("image_data/picture2.jpg", image)
-
-# app = QApplication(sys.argv)
-# label = QLabel()
-# label.setWindowTitle("实时显示图片")
-# label.setFixedSize(640, 480)
-
-
-# def update_frame():
-#     ret, frame = cap.read()
-#     cv2.imwrite("image_data/image_0.jpg", frame)
-#     if ret:
-#         frame = cv2.imread("image_data/image_0.jpg")
-#         rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#         h, w, ch = rgb_image.shape
-#         bytes_per_line = ch * w
-#         image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-#         pixmap = QPixmap.fromImage(image)
-#         label.setPixmap(pixmap)
-#         label.setScaledContents(True)
-#
-#
-# cap = cv2.VideoCapture(0)
-# timer = QTimer()
-# timer.timeout.connect(update_frame)
-# timer.start(30)
-# label.show()
-# sys.exit(app.exec_())

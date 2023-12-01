@@ -15,6 +15,7 @@ import os
 from p3_num_to_zh import num_to_zh
 import pyttsx3
 
+
 appid = "3c1ed4b2"  # 填写控制台中获取的 APPID 信息
 api_secret = "MWJlZmU0NTdhNGIwMjYyYmM5YjI4NWYz"  # 填写控制台中获取的 APISecret 信息
 api_key = "24b916c096bda93d9da64ae6909cd35f"  # 填写控制台中获取的 APIKey 信息
