@@ -90,6 +90,6 @@ def predict_realize(image: cv2.Mat) -> tuple:
 
 
 if __name__ == "__main__":
-    image_ = cv2.imread("../picture.jpg")
+    image_ = cv2.imread("../image_data/image_0.jpg")
     best_fit_ = predict_realize(image_)
     print(best_fit_)

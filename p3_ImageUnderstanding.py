@@ -15,7 +15,6 @@ import os
 from p3_num_to_zh import num_to_zh
 import pyttsx3
 
-
 appid = "3c1ed4b2"  # 填写控制台中获取的 APPID 信息
 api_secret = "MWJlZmU0NTdhNGIwMjYyYmM5YjI4NWYz"  # 填写控制台中获取的 APISecret 信息
 api_key = "24b916c096bda93d9da64ae6909cd35f"  # 填写控制台中获取的 APIKey 信息
@@ -88,7 +87,7 @@ def on_close(ws, one, two):
 
 # 收到websocket连接建立的处理
 def on_open(ws):
-    run_thread = threading.Thread(target=run, args=(ws, ))
+    run_thread = threading.Thread(target=run, args=(ws,))
     run_thread.start()
 
 
@@ -187,7 +186,8 @@ def checklen(text_):
     return text_
 
 
-def image_understanding(img_name_prefix: str, img_type: str, max_img_amount: int, start_index: int) -> list[str]:
+def image_understanding(img_name_prefix: str, img_type: str, max_img_amount: int, start_index: int,
+                        Input: str = "请你用客观、真实、简洁的语言概括这幅图片所包含的信息。", shoot=False) -> list[str]:
     """
     notice: 传入的图片文件必须是前缀+数字+类型的命名形式，且需以start_index开始连续命名，如"picture_0.jpg"、"images/picture_1.jpg"
 
@@ -197,16 +197,18 @@ def image_understanding(img_name_prefix: str, img_type: str, max_img_amount: int
     :param img_type: 图片类型，如"jpg"
     :param max_img_amount: 可接受的最大图片数量，可大于实际图片数
     :param start_index: 图片文件名起始下标
+    :param Input: 传给大模型的提示词，有默认值
+    :param shoot: 判断该函数是否在智慧拍照中使用
     :return: 对逐张图片的描述组成的列表
     """
     global answer, domain
+    answer = ""
     domain = "image"
     answer_list = []
     for i in range(start_index, start_index + max_img_amount):
         if os.path.exists(f"{img_name_prefix}{i}.{img_type}"):
             imagedata = open(f"{img_name_prefix}{i}.{img_type}", 'rb').read()
             text.append({"role": "user", "content": str(base64.b64encode(imagedata), 'utf-8'), "content_type": "image"})
-            Input = "请你用客观、真实、简洁的语言概括这幅图片所包含的信息。"
             question = checklen(getText("user", Input))
             main_image(appid, api_key, api_secret, imageunderstanding_url, imagedata, question)
             answer_list.append(answer)
@@ -214,6 +216,8 @@ def image_understanding(img_name_prefix: str, img_type: str, max_img_amount: int
             text.clear()
         else:
             break
+    if shoot:
+        voice_thread.join()
     return answer_list
 
 
@@ -235,6 +239,7 @@ def spark_chat(img_data_list: list[str], curr_scene: str) -> str:
     Input = f"我当前身处的场景是{curr_scene}。\
     同时，我在我身处的环境中拍了几张图片，这几张图片可能有重复和矛盾的部分，请筛查并提取真实简练的图片信息。\
     请你根据我提供的场景信息和提取后的图片信息用客观真实的语言描述一下我当前所处的环境，100个字左右。\
+    如果我给出的场景信息和图片信息矛盾，请忽视场景信息，以图片信息为准。\
     你说的话里不能包含英文。\
     请你仅仅描述我当前所处的环境，不要输出别的话。以下是这些图片的信息。"
     for i, num in zip(img_data_list, range(len(img_data_list))):
@@ -244,10 +249,12 @@ def spark_chat(img_data_list: list[str], curr_scene: str) -> str:
     voice_announce_thread()
     main_chat(appid, api_key, api_secret, spark_url, question)
     voice_thread.join()
+    text.clear()
     return answer
 
 
 def voice_announce_block():
+    global judge_ws_close
     engine = pyttsx3.init()
     index = 0
     while True:
@@ -257,12 +264,13 @@ def voice_announce_block():
             engine.runAndWait()
             index += 1
         elif judge_ws_close and (len(temp_answer_list) != 0):
+            judge_ws_close = False
             break
 
 
 def voice_announce_thread():
     global voice_thread
-    voice_thread = threading.Thread(target=voice_announce_block, args=())
+    voice_thread = threading.Thread(target=voice_announce_block)
     voice_thread.start()
 
 

@@ -26,13 +26,15 @@ scene_list = []
 def speech_listen(filepath):
     print("录音开始")
     with sr.Microphone() as mic:
-        data = r.listen(mic)
+        data = r.listen(mic, phrase_time_limit=8)
     print("录音结束")
     with open(filepath, "wb") as f:
         f.write(data.get_wav_data())
 
 
-def faster_whisper_recognize(out_audio, initial_prompt_):
+def faster_whisper_recognize(out_audio, r_, initial_prompt_):
+    global r
+    r = r_
     speech_listen("output.wav")
     print("transcribe_start")
     start_ = time.time()
@@ -88,7 +90,7 @@ def faster_whisper_speech(goal):
     voice_announce("请说环境识别。我将开始识别当前环境")
     while True:
         try:
-            segments = faster_whisper_recognize("output.wav", "环境识别")
+            segments = faster_whisper_recognize("output.wav", r, "环境识别")
             for segment in segments:
                 print(f"text: {segment.text}")
                 if goal in segment.text:
@@ -100,8 +102,11 @@ def faster_whisper_speech(goal):
 
 # 最终实现
 def final_realize_IA():
-    global track_under
-    voice_announce("好的。听到录像开始后请缓慢地转动镜头，总时长十五秒。我将根据镜头的画面识别当前环境。")
+    global track_under, track_catch, video_close
+    track_under = 0
+    track_catch = 0
+    video_close = False
+    voice_announce("好的。听到录像开始后请缓慢地转动镜头，总时长二十四秒。我将根据镜头的画面识别当前环境。当画面重复时我会自动停止")
     img_data_list = []
     image_catch_thread()
     while True:

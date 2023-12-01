@@ -6,7 +6,7 @@ import threading
 from faster_whisper import WhisperModel
 import time
 import multiprocessing
-
+from p3_ImageUnderstanding import image_understanding, voice_announce_thread
 
 judge_shoot = multiprocessing.Value('b', False)
 judge_announce = False
@@ -114,7 +114,8 @@ def realize_announce():
 def realize_speech(goal, r_, judge_shoot_):
     model_size = "../../face_detect/faster-whisper-webui/models/faster-whisper/faster-whisper-tiny"
     model_ = WhisperModel(model_size, device="cpu", compute_type="int8")
-    while True:
+    voice_announce("欢迎开启智慧拍照")
+    while not judge_shoot_.value:
         with sr.Microphone() as mic_:
             data = r_.listen(mic_, phrase_time_limit=8)
         try:
@@ -164,20 +165,19 @@ def realize_face():
                     voice_announce("拍照成功")
                     break
             cv2.waitKey(3000)
-            cv2.imwrite("picture.jpg", dst_image)
+            cv2.imwrite("image_data/image_0.jpg", dst_image)
             break
     cv2.destroyAllWindows()
 
 
-def final_realize_shoot(r_):
-    voice_announce("欢迎开启智慧拍照")
+def final_realize_shoot():
     realize_face_thread = threading.Thread(target=realize_face)
 
     realize_face_thread.start()
 
     realize_speech_process = multiprocessing.Process(target=realize_speech,
-                                                      args=("拍照", r_, judge_shoot),
-                                                      daemon=True)
+                                                     args=("拍照", r, judge_shoot),
+                                                     daemon=True)
 
     realize_announce_thread = threading.Thread(target=realize_announce, daemon=True)
 
@@ -185,8 +185,11 @@ def final_realize_shoot(r_):
     realize_announce_thread.start()
 
     realize_face_thread.join()
+    voice_announce_thread()
+    image_understanding("image_data/image_", "jpg", 1, 0,
+                        "请你内容、光线、色彩、构图等方面评价我这幅照片。", True)
 
 
 if __name__ == "__main__":
     speech_recognize_init()
-    final_realize_shoot(r)
+    final_realize_shoot()
