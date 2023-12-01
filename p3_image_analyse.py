@@ -66,7 +66,8 @@ def image_catch():
             if judge_equal_realize(image, trainImage):
                 break
         flip_image = cv2.flip(image, 1)
-        cv2.imshow(window_name, flip_image)
+        cv2.imwrite("image_data/picture.jpg", flip_image)
+        # cv2.imshow(window_name, flip_image)
         if time.time() - temp >= 3:
             temp = time.time()
             cv2.imwrite(f"image_data/image_{num}.jpg", image)

@@ -154,14 +154,16 @@ def realize_face():
             detect_sign = 1
         else:
             draw_const_face(image)
+        cv2.imwrite("image_data/picture.jpg", image)
         detect_sign += 1
-        cv2.imshow(window_name, image)
+        # cv2.imshow(window_name, image)
         if cv2.waitKey(3) == 32:
             judge_shoot.value = True
         if judge_shoot.value:
-            cv2.imshow(window_name, dst_image)
+            # cv2.imshow(window_name, dst_image)
             while True:
                 if judge_announce:
+                    cv2.imwrite("image_data/picture.jpg", dst_image)
                     voice_announce("拍照成功")
                     break
             cv2.waitKey(3000)
