@@ -2,7 +2,6 @@ import multiprocessing
 import sys
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QPixmap, QFont
-import cv2
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
 
 
@@ -72,8 +71,4 @@ def qt_exec(value):
 
 
 if __name__ == "__main__":
-    image = cv2.imread("image_data/picture2.jpg")
-    image2 = cv2.imread("image_data/picture.jpg")
-    height, width, channel = image2.shape
-    image = cv2.resize(image, (int(width), int(height)))
-    cv2.imwrite("image_data/picture2.jpg", image)
+    pass
