@@ -1,6 +1,7 @@
 import time
 import cv2
 import torch
+import torchvision
 from torchvision import transforms
 from PIL import Image
 import numpy as np
@@ -10,7 +11,8 @@ import numpy as np
 class Place365cls:
     def __init__(self, model_pth='place_365/place365.pth'):
         # 初始化模型
-        network = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18')
+        # network = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18')
+        network = torchvision.models.resnet18()
         network.fc = torch.nn.Linear(512, 365)
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         network.load_state_dict(torch.load(model_pth, map_location=device))
