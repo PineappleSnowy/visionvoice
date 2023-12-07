@@ -26,7 +26,7 @@ scene_list = []
 def speech_listen(filepath):
     print("录音开始")
     with sr.Microphone() as mic:
-        data = r.listen(mic, phrase_time_limit=8)
+        data = r.listen(mic, timeout=4, phrase_time_limit=8)
     print("录音结束")
     with open(filepath, "wb") as f:
         f.write(data.get_wav_data())
@@ -35,19 +35,22 @@ def speech_listen(filepath):
 def faster_whisper_recognize(out_audio, r_, initial_prompt_):
     global r
     r = r_
-    speech_listen("output.wav")
-    print("transcribe_start")
-    start_ = time.time()
-    segments, info = model.transcribe(out_audio, beam_size=5, language="zh",
-                                      initial_prompt=initial_prompt_)
-    print(f"trans_duration: {time.time() - start_}s")
+    try:
+        speech_listen("output.wav")
+        print("transcribe_start")
+        start_ = time.time()
+        segments, info = model.transcribe(out_audio, beam_size=5, language="zh",
+                                          initial_prompt=initial_prompt_)
+        print(f"trans_duration: {time.time() - start_}s")
+    except sr.WaitTimeoutError as e:
+        print(e)
+        segments = []
     return segments
 
 
-def image_catch():
+def image_catch(key_value_):
     global track_catch, video_close
     global start, finish
-    window_name = "curr_image"
     # "http://admin:admin@192.168.43.1:8081"
     cap = cv2.VideoCapture(0)
     num = 0
@@ -56,15 +59,20 @@ def image_catch():
     ret, trainImage = cap.read()
     if not ret:
         return None
-    trainImage = cv2.flip(trainImage, 1)
-    cv2.imwrite("image_data/picture.jpg", trainImage)
+    flip_image = cv2.flip(trainImage, 1)
+    cv2.imwrite("image_data/picture.jpg", flip_image)
+    cv2.imwrite(f"image_data/image_{num}.jpg", trainImage)
+    track_catch += 1
+    num += 1
+    scene_list.append(predict_realize(trainImage))
     start = time.time()
     temp = time.time()
-    while num < 8:
+    key_value_.value = False
+    while num < 8 and (not key_value_.value):
         ret, image = cap.read()
         if not ret:
             break
-        if num >= 1:
+        if time.time() - temp >= 2.5:
             if judge_equal_realize(image, trainImage):
                 break
         flip_image = cv2.flip(image, 1)
@@ -82,8 +90,8 @@ def image_catch():
     cv2.destroyAllWindows()
 
 
-def image_catch_thread():
-    img_catch_thread = threading.Thread(target=image_catch)
+def image_catch_thread(key_value_):
+    img_catch_thread = threading.Thread(target=image_catch, args=(key_value_, ))
     img_catch_thread.start()
 
 
@@ -103,14 +111,15 @@ def faster_whisper_speech(goal):
 
 
 # 最终实现
-def final_realize_IA():
+def final_realize_IA(answer_value_, key_value_):
     global track_under, track_catch, video_close
+    answer_value_.value = "以下是视界之声对照片或您所处环境的描述：\n    "
     track_under = 0
     track_catch = 0
     video_close = False
     voice_announce("好的。听到录像开始后请缓慢地转动镜头，总时长二十四秒。我将根据镜头的画面识别当前环境。当画面重复时我会自动停止")
     img_data_list = []
-    image_catch_thread()
+    image_catch_thread(key_value_)
     while True:
         if track_under < track_catch:
             img_data_list.extend(image_understanding("image_data/image_", "jpg", 1, track_under))
@@ -118,10 +127,11 @@ def final_realize_IA():
         elif video_close:
             break
     curr_scene = calc_most_proba_scene(scene_list)
-    spark_chat(img_data_list, curr_scene)
+    spark_chat(img_data_list, curr_scene, answer_value_)
     print(f"Time image capture takes: {finish - start}s")
 
 
 if __name__ == '__main__':
-    r = speech_recognize_init()
-    final_realize_IA()
+    # r = speech_recognize_init()
+    # final_realize_IA()
+    pass

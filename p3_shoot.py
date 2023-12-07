@@ -112,10 +112,12 @@ def realize_announce():
     judge_announce = True
 
 
-def realize_speech(goal, r_, judge_shoot_):
+def realize_speech(goal, r_, judge_shoot_, key_value_, other_start_):
     model_size = "../../face_detect/faster-whisper-webui/models/faster-whisper/faster-whisper-tiny"
     model_ = WhisperModel(model_size, device="cpu", compute_type="int8")
     voice_announce("欢迎开启智慧拍照")
+    key_value_.value = False
+    other_start_.value = True
     while not judge_shoot_.value:
         with sr.Microphone() as mic_:
             data = r_.listen(mic_, phrase_time_limit=8)
@@ -135,10 +137,11 @@ def realize_speech(goal, r_, judge_shoot_):
             continue
 
 
-def realize_face():
+def realize_face(key_value_, other_start_):
     global detect_sign
     global width_, height_
 
+    judge_shoot.value = False
     # phone_camera = "http://admin:admin@192.168.43.1:8081/"
     cap = cv2.VideoCapture(0)
     width_ = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -149,7 +152,7 @@ def realize_face():
             break
         image = cv2.flip(image, 1)
         dst_image = image.copy()
-        if detect_sign % 10 == 0:
+        if detect_sign % 5 == 0:
             const_face_list.clear()
             detect_face(image)
             detect_sign = 1
@@ -157,42 +160,48 @@ def realize_face():
             draw_const_face(image)
         cv2.imwrite("image_data/picture.jpg", image)
         detect_sign += 1
-        # cv2.imshow(window_name, image)
-        if cv2.waitKey(3) == 32:
-            judge_shoot.value = True
-        if judge_shoot.value:
-            # cv2.imshow(window_name, dst_image)
-            while True:
-                if judge_announce:
-                    cv2.imwrite("image_data/picture.jpg", dst_image)
-                    voice_announce("拍照成功")
-                    break
-            cv2.waitKey(3000)
-            cv2.imwrite("image_data/image_0.jpg", dst_image)
-            break
-    cv2.destroyAllWindows()
+        cv2.waitKey(3)
+        if other_start_.value:
+            if key_value_.value:
+                judge_shoot.value = True
+                # key_value_.value = False
+            if judge_shoot.value:
+                while True:
+                    if judge_announce:
+                        cv2.imwrite("image_data/picture.jpg", dst_image)
+                        voice_announce("拍照成功")
+                        break
+                cv2.waitKey(3000)
+                cv2.imwrite("image_data/image_0.jpg", dst_image)
+                break
 
 
-def final_realize_shoot():
-    realize_face_thread = threading.Thread(target=realize_face)
+def final_realize_shoot(answer_value_, key_value_):
+    answer_value_.value = "以下是视界之声对照片或您所处环境的描述：\n    "
+    other_start = multiprocessing.Value('b', False)
+    realize_face_thread = threading.Thread(target=realize_face, args=(key_value_, other_start))
 
     realize_face_thread.start()
 
     realize_speech_process = multiprocessing.Process(target=realize_speech,
-                                                     args=("拍照", r, judge_shoot),
+                                                     args=("拍照", r, judge_shoot, key_value_, other_start),
                                                      daemon=True)
 
     realize_announce_thread = threading.Thread(target=realize_announce, daemon=True)
 
     realize_speech_process.start()
-    realize_announce_thread.start()
+    while True:
+        if other_start.value:
+            realize_announce_thread.start()
+            break
 
     realize_face_thread.join()
-    voice_announce_thread()
+    voice_announce_thread(answer_value_)
     image_understanding("image_data/image_", "jpg", 1, 0,
                         "请你内容、光线、色彩、构图等方面评价我这幅照片。", True)
 
 
 if __name__ == "__main__":
-    speech_recognize_init()
-    final_realize_shoot()
+    # speech_recognize_init()
+    # final_realize_shoot()
+    pass

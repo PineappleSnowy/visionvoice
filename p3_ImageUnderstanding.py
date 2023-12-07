@@ -222,7 +222,7 @@ def image_understanding(img_name_prefix: str, img_type: str, max_img_amount: int
     return answer_list
 
 
-def spark_chat(img_data_list: list[str], curr_scene: str) -> str:
+def spark_chat(img_data_list: list[str], curr_scene: str, answer_value_) -> str:
     """
     initial_prompt: f"我当前身处的场景是{curr_scene}。\
     同时，我在我身处的环境中拍了几张图片，这几张图片可能有重复和矛盾的部分，请筛查并提取真实简练的图片信息。\
@@ -232,6 +232,7 @@ def spark_chat(img_data_list: list[str], curr_scene: str) -> str:
 
     :param img_data_list: 包含对逐张图片的描述的字符串列表
     :param curr_scene: 当前所处场景的类别
+    :param answer_value_: 实时得到识别结果的内存
     :return: 对环境信息的综述
     """
     global domain
@@ -247,20 +248,21 @@ def spark_chat(img_data_list: list[str], curr_scene: str) -> str:
         zh_num = num_to_zh(num + 1)
         Input += ("第" + zh_num + "张：" + i)
     question = checklen(getText("user", Input))
-    voice_announce_thread()
+    voice_announce_thread(answer_value_)
     main_chat(appid, api_key, api_secret, spark_url, question)
     voice_thread.join()
     text.clear()
     return answer
 
 
-def voice_announce_block():
+def voice_announce_block(answer_value_):
     global judge_ws_close
     engine = pyttsx3.init()
     index = 0
     while True:
         if len(temp_answer_list) > index:
             message = temp_answer_list[index]
+            answer_value_.value += message
             engine.say(message)
             engine.runAndWait()
             index += 1
@@ -269,9 +271,9 @@ def voice_announce_block():
             break
 
 
-def voice_announce_thread():
+def voice_announce_thread(answer_value_):
     global voice_thread
-    voice_thread = threading.Thread(target=voice_announce_block)
+    voice_thread = threading.Thread(target=voice_announce_block, args=(answer_value_, ))
     voice_thread.start()
 
 
