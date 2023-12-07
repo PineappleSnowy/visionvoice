@@ -168,7 +168,6 @@ def realize_face(key_value_, other_start_):
                         cv2.imwrite("image_data/picture.jpg", dst_image)
                         voice_announce("拍照成功")
                         break
-                cv2.waitKey(3000)
                 cv2.imwrite("image_data/image_0.jpg", dst_image)
                 break
 
