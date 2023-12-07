@@ -121,20 +121,17 @@ def realize_speech(goal, r_, judge_shoot_, key_value_, other_start_):
     while not judge_shoot_.value:
         with sr.Microphone() as mic_:
             data = r_.listen(mic_, phrase_time_limit=8)
-        try:
-            with open("output.wav", "wb") as f:
-                f.write(data.get_wav_data())
-            start = time.time()
-            # initial_prompt="拍照"
-            segments, info = model_.transcribe("output.wav", language="zh", initial_prompt="拍")
-            print(f"trans_duration: {time.time() - start}s")
-            for segment in segments:
-                print(f"trans_text: {segment.text}")
-                if goal in segment.text:
-                    judge_shoot_.value = True
-                    return None
-        except Exception:
-            continue
+        with open("output.wav", "wb") as f:
+            f.write(data.get_wav_data())
+        start = time.time()
+        # initial_prompt="拍照"
+        segments, info = model_.transcribe("output.wav", language="zh", initial_prompt="拍")
+        print(f"trans_duration: {time.time() - start}s")
+        for segment in segments:
+            print(f"trans_text: {segment.text}")
+            if goal in segment.text:
+                judge_shoot_.value = True
+                return None
 
 
 def realize_face(key_value_, other_start_):

@@ -5,7 +5,7 @@ import cv2
 from faster_whisper import WhisperModel
 from p3_ImageUnderstanding import image_understanding, spark_chat
 from p3_match_and_stitcher import judge_equal_realize
-from p3_shoot import voice_announce, speech_recognize_init
+from p3_shoot import voice_announce
 from place_365.app import predict_realize, calc_most_proba_scene
 
 

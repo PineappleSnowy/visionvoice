@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
         self.load_label = QLabel(self)
 
         self.label = QLabel(self)
-        self.image = QPixmap("dst_start_img.png")
+        self.image = QPixmap("image_data/dst_start_img.png")
         self.label.resize(self.image.width(), self.image.height())
         self.label.setPixmap(self.image)
         self.label.move(500, 100)

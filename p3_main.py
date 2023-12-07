@@ -67,31 +67,3 @@ def final_main():
 
 if __name__ == "__main__":
     final_main()
-
-    """
-from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtCore import Qt
-
-class MyWidget(QWidget):
-    def __init__(self):
-        super().__init__()
-
-        self.setWindowTitle('Keyboard Listener')
-        self.setGeometry(300, 300, 250, 150)
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
-            self.close()
-        elif event.key() == Qt.Key_A:
-            print('You pressed the "A" key')
-
-    def keyReleaseEvent(self, event):
-        if event.key() == Qt.Key_A:
-            print('You released the "A" key')
-
-if __name__ == '__main__':
-    app = QApplication([])
-    widget = MyWidget()
-    widget.show()
-    app.exec_()
-    """

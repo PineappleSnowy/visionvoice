@@ -182,8 +182,8 @@ def getlength(text_):
 
 
 def checklen(text_):
-    while getlength(text_[1:]) > 8000:
-        del text_[1]
+    while getlength(text_[0:]) > 8000:
+        del text_[0]
     return text_
 
 
