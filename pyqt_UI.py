@@ -7,6 +7,9 @@ from PyQt5.QtGui import QPixmap, QFont, QColor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QProgressBar, QTextEdit
 
 
+close_ = False
+
+
 class MyWindow(QMainWindow):
     def __init__(self, func1, name1, func2, name2, func3, name3, windowTitle,
                  answer_value_, key_value_):
@@ -96,6 +99,7 @@ def qt_exec(value, answer_value_, key_value_):
     timer.timeout.connect(window.update_frame)
     timer.start(30)
     app.exec_()
+    os.system("taskkill /F /IM python.exe")
 
 
 class MainWindow(QMainWindow):
@@ -140,7 +144,9 @@ class MainWindow(QMainWindow):
     def update_progress(self):
         value = self.progress_bar.value() + 1
         if value > 100:
+            global close_
             time.sleep(1)
+            close_ = True
             self.close()
         if value == 100:
             self.load_label.setGeometry(1800, 800, 250, 50)
@@ -166,6 +172,8 @@ def start_exec(value):
     timer.timeout.connect(window_.update_progress)
     timer.start(95)
     app_.exec_()
+    if not close_:
+        os.system("taskkill /F /IM python.exe")
     value.value = 0
 
 

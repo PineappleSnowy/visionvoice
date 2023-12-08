@@ -11,7 +11,6 @@ from time import mktime
 from urllib.parse import urlencode
 from wsgiref.handlers import format_date_time
 import websocket  # 使用websocket_client
-import os
 from p3_num_to_zh import num_to_zh
 import pyttsx3
 
@@ -207,16 +206,13 @@ def image_understanding(img_name_prefix: str, img_type: str, max_img_amount: int
     domain = "image"
     answer_list = []
     for i in range(start_index, start_index + max_img_amount):
-        if os.path.exists(f"{img_name_prefix}{i}.{img_type}"):
-            imagedata = open(f"{img_name_prefix}{i}.{img_type}", 'rb').read()
-            text.append({"role": "user", "content": str(base64.b64encode(imagedata), 'utf-8'), "content_type": "image"})
-            question = checklen(getText("user", Input))
-            main_image(appid, api_key, api_secret, imageunderstanding_url, imagedata, question)
-            answer_list.append(answer)
-            answer = ""
-            text.clear()
-        else:
-            break
+        imagedata = open(f"{img_name_prefix}{i}.{img_type}", 'rb').read()
+        text.append({"role": "user", "content": str(base64.b64encode(imagedata), 'utf-8'), "content_type": "image"})
+        question = checklen(getText("user", Input))
+        main_image(appid, api_key, api_secret, imageunderstanding_url, imagedata, question)
+        answer_list.append(answer)
+        answer = ""
+        text.clear()
     if shoot:
         voice_thread.join()
     return answer_list

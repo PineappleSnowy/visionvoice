@@ -1,5 +1,4 @@
 import time
-import cv2
 import torch
 import torchvision
 from torchvision import transforms
@@ -81,7 +80,7 @@ def calc_most_proba_scene(scene_list_):
     return sorted_scene[0][0]
 
 
-def predict_realize(image: cv2.Mat) -> tuple:
+def predict_realize(image) -> tuple:
     start = time.time()
     result = predict(image)
     result_list = list(result.items())
@@ -92,6 +91,7 @@ def predict_realize(image: cv2.Mat) -> tuple:
 
 
 if __name__ == "__main__":
-    image_ = cv2.imread("../image_data/image_0.jpg")
-    best_fit_ = predict_realize(image_)
-    print(best_fit_)
+    # image_ = cv2.imread("../image_data/image_0.jpg")
+    # best_fit_ = predict_realize(image_)
+    # print(best_fit_)
+    pass
