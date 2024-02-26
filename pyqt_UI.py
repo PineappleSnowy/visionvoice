@@ -28,21 +28,24 @@ class MyWindow(QMainWindow):
         self.button1 = QPushButton(name1, self)
         self.button1.setGeometry(50, 100, 300, 200)
         self.button1.clicked.connect(func1)
-        self.button1.setStyleSheet("background-color: orange;")
+        self.button1.setStyleSheet("QPushButton{background-color: orange;}"
+                                   "QPushButton:pressed{background-color: rgb(200, 120, 0);}")
         self.button1.setFont(font)
         self.button1.setFocusPolicy(Qt.NoFocus)
 
         self.button2 = QPushButton(name2, self)
         self.button2.setGeometry(50, 400, 300, 200)
         self.button2.clicked.connect(func2)
-        self.button2.setStyleSheet("background-color: orange;")
+        self.button2.setStyleSheet("QPushButton{background-color: orange;}"
+                                   "QPushButton:pressed{background-color: rgb(200, 120, 0);}")
         self.button2.setFont(font)
         self.button2.setFocusPolicy(Qt.NoFocus)
 
         self.button3 = QPushButton(name3, self)
         self.button3.setGeometry(50, 700, 300, 200)
         self.button3.clicked.connect(func3)
-        self.button3.setStyleSheet("background-color: orange;")
+        self.button3.setStyleSheet("QPushButton{background-color: orange;}"
+                                   "QPushButton:pressed{background-color: rgb(200, 120, 0);}")
         self.button3.setFont(font)
         self.button3.setFocusPolicy(Qt.NoFocus)
 
@@ -112,14 +115,21 @@ class MainWindow(QMainWindow):
         self.load_label = QLabel(self)
 
         self.label = QLabel(self)
-        self.image = QPixmap("image_data/dst_start_img.png")
+        self.image = QPixmap("image_data/logo.jpg")
         self.label.resize(self.image.width(), self.image.height())
         self.label.setPixmap(self.image)
-        self.label.move(500, 100)
+        self.label.move(695, 100)
+
+        self.logo_name = QLabel("视界之声", self)
+        font = QFont()
+        font.setPointSize(40)
+        font.setBold(True)
+        self.logo_name.setFont(font)
+        self.logo_name.setGeometry(840, 480, 800, 100)
 
         self.dream_label = QLabel("   希望不再有于黑暗中踽踽独行者\n每一个灵魂都拥有拥抱光彩世界的自由", self)
-        font = QFont()
         font.setPointSize(20)
+        font.setBold(False)
         self.dream_label.setFont(font)
         self.dream_label.setGeometry(660, 650, 800, 100)
 
