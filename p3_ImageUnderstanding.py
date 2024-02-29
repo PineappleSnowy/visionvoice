@@ -4,7 +4,6 @@ import datetime
 import hashlib
 import hmac
 import json
-import time
 from urllib.parse import urlparse
 import ssl
 from datetime import datetime
