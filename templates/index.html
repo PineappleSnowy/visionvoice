@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Environment Recognize</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.7, maximum-scale=0.7, user-scalable=0">
+    <style>
+        #shootButton {
+            position: absolute;
+            top: 5%; /* 按钮组件垂直位置 */
+            left: 50%; /* 按钮组件水平位置 */
+            transform: translate(-50%, -50%); /* 使用transform属性完成居中 */
+            width: 100%; /* 按钮宽度占页面总宽度的% */
+            height: 10%; /* 按钮高度占页面总高度的% */
+        }
+        #videoElement {
+            position: absolute;
+            top: 11%; /* 视频组件垂直位置 */
+            left: 3.5%; /* 视频组件水平位置 */
+            transform: scaleX(-1); /*水平翻转*/
+        }
+        #messageContainer {
+            position: absolute;
+            top: 90%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            height: 20%;
+        }
+        #audioElement {
+            display: none;
+        }
+        html, body {
+            overflow: hidden;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <button id="shootButton" style="font-size: 30px;">重新开始</button>
+    <video id="videoElement" autoplay></video>
+    <div id="messageContainer" style="font-size: 20px;"></div>
+    <audio id="audioElement" controls></audio>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        // 获取video元素、message容器和audio元素
+        const videoElement = document.getElementById('videoElement');
+        const messageContainer = document.getElementById('messageContainer');
+        const audioElement = document.getElementById('audioElement');
+        const shootButton = document.getElementById('shootButton');
+
+        // 添加按钮点击事件监听器
+        shootButton.addEventListener('click', () => {
+        // 向后端发送信号
+        socket.emit('message', 'Restarted!');
+        });
+
+        // 摄像头流处理函数
+        function handleCameraStream(stream) {
+            // 将摄像头流附加到video元素
+            videoElement.srcObject = stream;
+        }
+
+        // 处理摄像头访问错误
+        function handleCameraError(error) {
+            console.error('Camera access denied!', error);
+        }
+
+        // 处理WebSocket消息
+        function handleWebSocketMessage(message) {
+            if (message.startsWith("out")) {
+            audioElement.src =  "/audio?" + Date.now();
+            audioElement.play();
+            }
+            else{
+            // 清空文本
+            messageContainer.innerHTML = ""
+            // 在message容器中显示接收到的文本消息
+            const messageElement = document.createElement('p');
+            messageElement.innerText = message;
+            messageContainer.appendChild(messageElement);
+            }
+        }
+
+        // 请求访问摄像头
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(handleCameraStream)
+            .catch(handleCameraError);
+
+        // 创建WebSocket连接并监听消息
+        const socket = io();
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+        socket.on('message', handleWebSocketMessage);
+
+        // 每隔30毫秒从视频流中获取一帧，并通过XHR发送到Flask后端
+        function captureAndSendFrame() {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg');
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/process_frame', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const response = xhr.responseText;
+                    // 发送到后端处理的图像帧也通过WebSocket发送到前端显示
+                    socket.emit('message', response);
+                }
+            };
+            xhr.send(JSON.stringify({ frame: imageData }));
+
+            setTimeout(captureAndSendFrame, 5000);
+        }
+
+        // 开始定时获取视频帧并发送给后端
+        captureAndSendFrame();
+    </script>
+</body>
+</html>

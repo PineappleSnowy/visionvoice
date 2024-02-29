@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Player</title>
+</head>
+<body onload="playAudio();">
+    <h1>Audio Player</h1>
+    <audio id="audio_player" controls>
+        <source src="{{ audio_file }}" type="audio/mp3">
+    </audio>
+    <script>
+        function playAudio() {
+            var audioPlayer = document.getElementById('audio_player');
+            audioPlayer.play();
+        }
+    </script>
+</body>
+</html>

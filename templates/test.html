@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volume Button Press</title>
+</head>
+<body>
+<button id="button">Press Me!</button>
+
+<script>
+const button = document.getElementById('button');
+
+// 监听音量键按下事件
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'VolumeUp' || event.key === 'VolumeDown') {
+    button.click(); // 模拟按钮点击事件
+  }
+});
+
+// 按钮点击事件处理
+button.addEventListener('click', function() {
+  alert('Button pressed!');
+});
+</script>
+</body>
+</html>
