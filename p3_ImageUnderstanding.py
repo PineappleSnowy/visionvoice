@@ -14,7 +14,6 @@ from wsgiref.handlers import format_date_time
 import cv2
 import websocket  # 使用websocket_client
 from p3_num_to_zh import num_to_zh
-import pyttsx3
 
 appid = "3c1ed4b2"  # 填写控制台中获取的 APPID 信息
 api_secret = "MWJlZmU0NTdhNGIwMjYyYmM5YjI4NWYz"  # 填写控制台中获取的 APISecret 信息
@@ -253,30 +252,3 @@ def listen_answer(answer_value):
 def listen_answer_thread(answer_value):
     thread_ = threading.Thread(target=listen_answer, args=(answer_value, ))
     thread_.start()
-
-
-def voice_announce_block(answer_value_):
-    global judge_ws_close
-    engine = pyttsx3.init()
-    index = 0
-    while True:
-        if len(temp_answer_list) > index:
-            message = temp_answer_list[index]
-            answer_value_.value += message
-            engine.say(message)
-            engine.runAndWait()
-            index += 1
-        elif judge_ws_close and (len(temp_answer_list) != 0):
-            judge_ws_close = False
-            break
-
-
-def voice_announce_thread(answer_value_):
-    global voice_thread
-    voice_thread = threading.Thread(target=voice_announce_block, args=(answer_value_,))
-    voice_thread.start()
-
-
-if __name__ == '__main__':
-    # data_list = image_understanding("img_", "jpg", 3, 0)
-    pass
