@@ -13,8 +13,8 @@ import pyttsx3
 temp = time.time()
 restart = False
 model_process = multiprocessing.Process()
+model_process2 = multiprocessing.Process()
 max_img_num = 3
-model_restart = False
 
 
 def analyse_img_process(flag_, img_data_list_, scene_value_, answer_value_):
@@ -33,6 +33,7 @@ def save_audio(text):
 
 
 def final_realize():
+    global model_process, model_process2
     app = Flask(__name__)
     CORS(app)
     socketio = SocketIO(app)
@@ -40,18 +41,41 @@ def final_realize():
     img_data_list = multiprocessing.Manager().list([])
     scene_value = multiprocessing.Manager().Value(ctypes.c_char_p, "indoor")
     answer_value = multiprocessing.Manager().Value(ctypes.c_char_p, "")
-    lock = multiprocessing.Lock()
+
+    model_process = multiprocessing.Process(target=analyse_img_process,
+                                            args=(flag, img_data_list, scene_value, answer_value))
+    model_process2 = multiprocessing.Process(target=analyse_img_process,
+                                             args=(flag, img_data_list, scene_value, answer_value))
 
     def temp_process():
-        global model_process
-        model_process = multiprocessing.Process(target=analyse_img_process,
-                                                args=(flag, img_data_list, scene_value, answer_value))
         model_process.start()
+
+    def init():
+        global restart, temp, model_process, model_process2
+        restart = False
+        temp = time.time()
+        flag.value = 0
+        if model_process.is_alive():
+            model_process.terminate()
+            model_process2 = multiprocessing.Process(target=analyse_img_process,
+                                                     args=(flag, img_data_list, scene_value, answer_value))
+            model_process2.start()
+        elif model_process2.is_alive():
+            model_process2.terminate()
+            model_process = multiprocessing.Process(target=analyse_img_process,
+                                                    args=(flag, img_data_list, scene_value, answer_value))
+            model_process.start()
+        else:
+            model_process = multiprocessing.Process(target=analyse_img_process,
+                                                    args=(flag, img_data_list, scene_value, answer_value))
+            model_process.start()
+        flag.value = 0
+        answer_value.value = ""
+        img_data_list[:] = []
 
     @app.route('/')
     def route_():
-        global temp
-        temp = time.time()
+        init()
         return render_template("index.html")
 
     @app.route('/audio')
@@ -62,27 +86,16 @@ def final_realize():
     # 处理从前端传来的视频帧
     @app.route('/process_frame', methods=['GET', 'POST'])
     def process_frame():
-        global restart, temp, model_restart
-        if not model_process.is_alive() and model_restart:
-            model_process.start()
-            print("success")
         if restart:
-            temp = time.time() - 2
-            restart = False
-            flag.value = 0
-            if model_process.is_alive():
-                model_process.kill()
-                model_restart = True
-                answer_value.value = ""
-                img_data_list[:] = []
-        if time.time() - temp > 4:
+            init()
+        if time.time() - temp > 2:
             if flag.value == 0:
                 flag.value = 1
                 save_audio(
                     "欢迎使用视界之声环境识别。听到录像开始后请缓慢地转动镜头，总时长15秒，"
                     "我将根据镜头画面识别当前环境。当画面重复时我会自动停止。录像开始")
                 return "output"
-        if not time.time() - temp > 20:
+        if not time.time() - temp > 18:
             return "视界之声的回答：\n  "
         else:
             frame_data = request.get_json()
@@ -95,7 +108,7 @@ def final_realize():
                     # 将numpy数组转换为OpenCV的图像对象
                     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
                     img_data_list.extend(image_understanding(img))
-                    flag.value += 1
+                    flag.value = min(flag.value + 1, max_img_num + 1)
                 except Exception:
                     pass
                 return "视界之声的回答：\n  "
@@ -120,7 +133,7 @@ def final_realize():
     def handle_message(message):
         global restart
         if message == 'Restarted!':
-            print("erro#############")
+            print("restarted###########")
             restart = True
         # 向前端发送接收到的文本消息
         emit('message', message)
