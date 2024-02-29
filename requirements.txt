@@ -5,3 +5,4 @@ pyttsx3
 mediapipe
 flask
 flask-cors
+flask-socketio
