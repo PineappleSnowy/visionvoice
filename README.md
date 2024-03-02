@@ -18,10 +18,10 @@
   1. 在地址栏中输入以下指令
      - Chrome: chrome://flags/#unsafely-treat-insecure-origin-as-secure
      - Edge: edge://flags/#unsafely-treat-insecure-origin-as-secure
-  ![](md_img/md_地址栏.png)
+  ![](md_img/r_地址栏.png)
   2. 安全地址列表中加入代码运行环境的局域网IP，非80端口需要加上端口信息
-  ![](md_img/md_IP信息.png)
+  ![](md_img/r_IP信息.png)
   3. 选择"enable"或"启用"
   4. 点击空白处，然后重启浏览器
-  ![](md_img/md_重启.png)
+  ![](md_img/r_重启.png)
 
