@@ -1,5 +1,6 @@
 __pycache__/
 camera_gradio/
 speed_transcription/
-product*/
+product*
 output.wav
+announce.py
