@@ -8,8 +8,8 @@
 ## 运行截图
 
 - 启动画面
-![](md_img/md_start.png)`
-`
+![](md_img/md_start.png)
+
 - UI界面
 ![](md_img/md_UI.png)
 
