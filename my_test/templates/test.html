@@ -1,0 +1,84 @@
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+<!--<head>-->
+<!--    <title>Video Capture and Draw Rectangle</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <video id="videoElement" width="400" height="300" autoplay></video>-->
+<!--    <canvas id="canvasElement" width="400" height="300"></canvas>-->
+
+<!--    <script>-->
+<!--        const video = document.getElementById('videoElement');-->
+<!--        const canvas = document.getElementById('canvasElement');-->
+<!--        const ctx = canvas.getContext('2d');-->
+<!--        video.style.display = 'none';-->
+
+<!--        navigator.mediaDevices.getUserMedia({ video: true })-->
+<!--            .then((stream) => {-->
+<!--                video.srcObject = stream;-->
+<!--            })-->
+<!--            .catch((error) => {-->
+<!--                console.error('Error accessing camera: ', error);-->
+<!--            });-->
+
+<!--        video.addEventListener('play', () => {-->
+<!--            setInterval(() => {-->
+<!--                ctx.clearRect(0, 0, canvas.width, canvas.height);-->
+<!--                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);-->
+<!--                ctx.beginPath();-->
+<!--                ctx.rect(100, 100, 50, 50);-->
+<!--                ctx.strokeStyle = 'red';-->
+<!--                ctx.stroke();-->
+<!--            }, 1000 / 30);-->
+<!--        });-->
+<!--    </script>-->
+<!--</body>-->
+<!--</html>-->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Capture and Draw Rectangle</title>
+</head>
+<body>
+    <video id="videoElement" width="400" height="300" autoplay></video>
+    <canvas id="canvasElement" width="400" height="300"></canvas>
+
+    <script>
+        const video = document.getElementById('videoElement');
+        const canvas = document.getElementById('canvasElement');
+        const ctx = canvas.getContext('2d');
+        video.style.display = 'none';
+
+        const socket = new WebSocket('ws://localhost:8080'); // WebSocket连接
+
+        const updateRectangle = () => {
+            fetch('/getRandomPosition')
+                .then(response => response.json())
+                .then(data => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    ctx.beginPath();
+                    ctx.rect(data.x, data.y, 50, 50);
+                    ctx.strokeStyle = 'red';
+                    ctx.stroke();
+
+                    socket.send(JSON.stringify(data)); // 发送新位置信息到后端
+                });
+        };
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((error) => {
+                console.error('Error accessing camera: ', error);
+            });
+
+        video.addEventListener('play', () => {
+            setInterval(updateRectangle, 30);
+        });
+    </script>
+</body>
+</html>

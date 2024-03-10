@@ -32,6 +32,14 @@ def final_realize():
     temp = time.time()  # 方向提示音频播放时长
     temp2 = time.time()  # 页面加载等待及欢迎音频播放时长
 
+    @app.after_request
+    def add_header(response):
+        response.headers['Access-Control-Allow-Origin'] = '*'  # 允许所有域名跨域访问
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'  # 允许的请求头
+        response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'  # 允许的HTTP方法
+
+        return response
+
     @app.route('/')
     def index():
         # 初始化参数信息
@@ -134,7 +142,6 @@ def final_realize():
     @socketio.on('message')
     def handle_message(message):
         # message内容包括后端路由文本返回值以及前端发来的文本消息
-        print(message)
         nonlocal temp
         if message == "shoot":
             # 前端发来拍照或再拍一张的指令，修改一系列参量

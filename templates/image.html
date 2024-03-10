@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
     <title>Intelligent Camera</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=0.85, user-scalable=0">
     <style>
         #shootButton {
@@ -12,6 +13,11 @@
             transform: translate(-50%, -50%); /* 使用transform属性完成居中 */
             width: 100%; /* 按钮宽度占页面总宽度的% */
             height: 15%; /* 按钮高度占页面总高度的% */
+            opacity: 0.0; /* 设置按钮透明度为70% */
+            background-color: orange;
+        }
+        #shootButton:active {
+            opacity: 0.2;
         }
         #audioElement {
             display: none;
@@ -19,6 +25,7 @@
         html, body {
             overflow: hidden;
             height: 100%;
+            background-color: black;
         }
     </style>
 </head>
