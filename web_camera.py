@@ -28,7 +28,7 @@ def final_realize():
     shoot2 = multiprocessing.Value('b', False)  # 播放拍照成功音频
     shoot3 = multiprocessing.Value('b', False)  # 保持拍照后画面静止
     img = None
-    image = None
+    # image = None
     temp = time.time()  # 方向提示音频播放时长
     temp2 = time.time()  # 页面加载等待及欢迎音频播放时长
     X , Y, W, H = 0, 0, 0, 0
@@ -57,7 +57,7 @@ def final_realize():
     # 处理从前端传来的视频帧
     @app.route('/process_frame', methods=['GET', 'POST'])
     def process_frame():
-        nonlocal img, image, temp, X , Y, W, H
+        nonlocal img, temp, X , Y, W, H
         if judge.value:
             # 开始四秒等待用户前端界面加载完成，然后播放开始音频
             if time.time() - temp2 > 4:
@@ -78,7 +78,7 @@ def final_realize():
                 # 播放欢迎音频时框出人脸并反馈方位
                 height_, width_ = img.shape[:2]
                 X , Y, W, H = detect_face(img, direction, width_, height_)
-                image = cv2.imencode('.jpg', img)[1].tobytes()
+                # image = cv2.imencode('.jpg', img)[1].tobytes()
                 return "image"
             if shoot3.value:
                 # 保持画面静止
@@ -94,7 +94,8 @@ def final_realize():
             else:
                 # 此时shoot==True，拍照，不画人脸框
                 shoot2.value = True
-            image = cv2.imencode('.jpg', img)[1].tobytes()
+                X, Y, W, H = 0, 0, 0, 0
+            # image = cv2.imencode('.jpg', img)[1].tobytes()
             # 1.5秒等待方向音频播放完毕
             if direction.value == 0 or (time.time() - temp < 1.5):
                 return "image"
@@ -105,13 +106,13 @@ def final_realize():
         except Exception:
             return ""
 
-    def gen():
-        # 处理image仍为None的异常
-        try:
-            return (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n')
-        except Exception:
-            return ""
+    # def gen():
+    #     # 处理image仍为None的异常
+    #     try:
+    #         return (b'--frame\r\n'
+    #                 b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n')
+    #     except Exception:
+    #         return ""
 
     @app.route('/video_feed')
     def video_feed():
@@ -128,9 +129,9 @@ def final_realize():
         elif shoot3.value:
             save_audio("拍照成功")
         elif direction.value == 1:
-            save_audio("向左")
-        elif direction.value == 2:
             save_audio("向右")
+        elif direction.value == 2:
+            save_audio("向左")
         elif direction.value == 3:
             save_audio("向上")
         elif direction.value == 4:
@@ -157,7 +158,7 @@ def final_realize():
         # 向前端发送接收到的文本消息
         emit('message', message)
 
-    socketio.run(app, host='0.0.0.0', port=5000, log_output=True, use_reloader=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, log_output=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
