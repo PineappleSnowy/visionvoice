@@ -43,8 +43,9 @@
 </head>
 
 <body>
-    <img id="imageElement" alt="这是一个描述图像内容的替代文本"
-        src="C:/Users/14704/PycharmProjects/pythonProject1/product_test/android_test/product_web/md_img/r_地址栏.png">
+    <!-- <img id="imageElement" alt="这是一个描述图像内容的替代文本"
+        src="C:/Users/14704/PycharmProjects/pythonProject1/product_test/android_test/product_web/md_img/r_地址栏.png"> -->
+    <canvas id="canvasElement" width="400" height="300"></canvas>
     <video id="videoElement" autoplay></video>
     <button id="shootButton" style="font-size: 30px;">拍照</button>
     <audio id="audioElement" controls></audio>
@@ -52,7 +53,9 @@
     <script>
         // 获取video、image、audio元素
         const videoElement = document.getElementById('videoElement');
-        const imageElement = document.getElementById('imageElement');
+        // const imageElement = document.getElementById('imageElement');
+        const canvasElement = document.getElementById('canvasElement');
+        const ctx1 = canvasElement.getContext('2d');
         const audioElement = document.getElementById('audioElement');
         const shootButton = document.getElementById('shootButton');
         // 隐藏原始摄像头画面
@@ -94,22 +97,34 @@
                 })
                     .then(response => response.json())
                     .then(data => {
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        const scaledWidth = videoElement.videoWidth;
-                        const scaledHeight = videoElement.videoHeight;
-                        canvas.width = scaledWidth;
-                        canvas.height = scaledHeight;
-
+                        canvasElement.width = videoElement.videoWidth;
+                        canvasElement.height = videoElement.videoHeight;
                         //水平翻转
-                        context.scale(-1, 1);
-                        context.translate(-scaledWidth, 0);
-                        context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
-                        context.beginPath();
-                        context.rect(data.x, data.y, data.w, data.h);
-                        context.strokeStyle = 'green';
-                        context.stroke();
-                        imageElement.src = canvas.toDataURL()
+                        ctx1.scale(-1, 1);
+                        ctx1.translate(-canvasElement.width, 0);
+                        ctx1.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                        ctx1.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+                        ctx1.lineWidth = 3; // 设置线条宽度为2像素
+                        ctx1.beginPath();
+                        ctx1.rect(data.x, data.y, data.w, data.h);
+                        ctx1.strokeStyle = 'green';
+                        ctx1.stroke();
+                        // const canvas = document.createElement('canvas');
+                        // const context = canvas.getContext('2d');
+                        // const scaledWidth = videoElement.videoWidth;
+                        // const scaledHeight = videoElement.videoHeight;
+                        // canvas.width = scaledWidth;
+                        // canvas.height = scaledHeight;
+
+                        // //水平翻转
+                        // context.scale(-1, 1);
+                        // context.translate(-scaledWidth, 0);
+                        // context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
+                        // context.beginPath();
+                        // context.rect(data.x, data.y, data.w, data.h);
+                        // context.strokeStyle = 'green';
+                        // context.stroke();
+                        // imageElement.src = canvas.toDataURL()
                     })
 
                 if (message.startsWith("an")) {
