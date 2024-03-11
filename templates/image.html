@@ -164,7 +164,7 @@
                 };
                 xhr.send(JSON.stringify({ frame: imageData }));
 
-                await new Promise(resolve => setTimeout(resolve, 100)); // 休眠0.01秒
+                await new Promise(resolve => setTimeout(resolve, 30)); // 休眠0.01秒
             }
         }
 
