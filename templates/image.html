@@ -43,134 +43,134 @@
 </head>
 
 <body>
-    <!-- <img id="imageElement" alt="这是一个描述图像内容的替代文本"
-        src="C:/Users/14704/PycharmProjects/pythonProject1/product_test/android_test/product_web/md_img/r_地址栏.png"> -->
-    <canvas id="canvasElement" width="400" height="300"></canvas>
-    <video id="videoElement" autoplay></video>
-    <button id="shootButton" style="font-size: 30px;">拍照</button>
-    <audio id="audioElement" controls></audio>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script>
-        // 获取video、image、audio元素
-        const videoElement = document.getElementById('videoElement');
-        // const imageElement = document.getElementById('imageElement');
-        const canvasElement = document.getElementById('canvasElement');
-        const ctx1 = canvasElement.getContext('2d');
-        const audioElement = document.getElementById('audioElement');
-        const shootButton = document.getElementById('shootButton');
-        // 隐藏原始摄像头画面
-        videoElement.style.display = 'none';
+<!-- <img id="imageElement" alt="这是一个描述图像内容的替代文本"
+    src="C:/Users/14704/PycharmProjects/pythonProject1/product_test/android_test/product_web/md_img/r_地址栏.png"> -->
+<canvas id="canvasElement" width="400" height="300"></canvas>
+<video id="videoElement" autoplay></video>
+<button id="shootButton" style="font-size: 30px;">拍照</button>
+<audio id="audioElement" controls></audio>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    // 获取video、image、audio元素
+    const videoElement = document.getElementById('videoElement');
+    // const imageElement = document.getElementById('imageElement');
+    const canvasElement = document.getElementById('canvasElement');
+    const ctx1 = canvasElement.getContext('2d');
+    const audioElement = document.getElementById('audioElement');
+    const shootButton = document.getElementById('shootButton');
+    // 隐藏原始摄像头画面
+    videoElement.style.display = 'none';
 
-        // 摄像头流处理函数
-        function handleCameraStream(stream) {
-            // 将摄像头流附加到video元素
-            videoElement.srcObject = stream;
-        }
+    // 摄像头流处理函数
+    function handleCameraStream(stream) {
+        // 将摄像头流附加到video元素
+        videoElement.srcObject = stream;
+    }
 
-        // 处理摄像头访问错误
-        function handleCameraError(error) {
-            console.error('Camera access denied!', error);
-        }
+    // 处理摄像头访问错误
+    function handleCameraError(error) {
+        console.error('Camera access denied!', error);
+    }
 
-        // 请求访问摄像头
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(handleCameraStream)
-            .catch(handleCameraError);
+    // 请求访问摄像头
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(handleCameraStream)
+        .catch(handleCameraError);
 
-        // 添加按钮点击事件监听器
-        shootButton.addEventListener('click', () => {
-            // 向后端发送信号
-            socket.emit('message', 'shoot');
-            if (document.getElementById("shootButton").innerHTML == "拍照")
-                document.getElementById("shootButton").innerHTML = "再拍一张";
-            else
-                document.getElementById("shootButton").innerHTML = "拍照";
-        });
+    // 添加按钮点击事件监听器
+    shootButton.addEventListener('click', () => {
+        // 向后端发送信号
+        socket.emit('message', 'shoot');
+        if (document.getElementById("shootButton").innerHTML == "拍照")
+            document.getElementById("shootButton").innerHTML = "再拍一张";
+        else
+            document.getElementById("shootButton").innerHTML = "拍照";
+    });
 
-        // 处理WebSocket消息
-        function handleWebSocketMessage(message) {
-            if (message.startsWith("im") || message.startsWith("an")) {
-                fetch('/video_feed', {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        canvasElement.width = videoElement.videoWidth;
-                        canvasElement.height = videoElement.videoHeight;
-                        //水平翻转
-                        ctx1.scale(-1, 1);
-                        ctx1.translate(-canvasElement.width, 0);
-                        ctx1.clearRect(0, 0, canvasElement.width, canvasElement.height);
-                        ctx1.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-                        ctx1.lineWidth = 3; // 设置线条宽度为2像素
-                        ctx1.beginPath();
-                        ctx1.rect(data.x, data.y, data.w, data.h);
-                        ctx1.strokeStyle = 'green';
-                        ctx1.stroke();
-                        // const canvas = document.createElement('canvas');
-                        // const context = canvas.getContext('2d');
-                        // const scaledWidth = videoElement.videoWidth;
-                        // const scaledHeight = videoElement.videoHeight;
-                        // canvas.width = scaledWidth;
-                        // canvas.height = scaledHeight;
-
-                        // //水平翻转
-                        // context.scale(-1, 1);
-                        // context.translate(-scaledWidth, 0);
-                        // context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
-                        // context.beginPath();
-                        // context.rect(data.x, data.y, data.w, data.h);
-                        // context.strokeStyle = 'green';
-                        // context.stroke();
-                        // imageElement.src = canvas.toDataURL()
-                    })
-
-                if (message.startsWith("an")) {
-                    audioElement.src = '/audio?' + Date.now();
-                    audioElement.play();
+    // 处理WebSocket消息
+    function handleWebSocketMessage(message) {
+        if (message.startsWith("im") || message.startsWith("an")) {
+            fetch('/video_feed', {
+                headers: {
+                    'Content-Type': 'application/json'
                 }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    canvasElement.width = videoElement.videoWidth;
+                    canvasElement.height = videoElement.videoHeight;
+                    //水平翻转
+                    ctx1.scale(-1, 1);
+                    ctx1.translate(-canvasElement.width, 0);
+                    ctx1.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    ctx1.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+                    ctx1.lineWidth = 3; // 设置线条宽度为2像素
+                    ctx1.beginPath();
+                    ctx1.rect(data.x, data.y, data.w, data.h);
+                    ctx1.strokeStyle = 'green';
+                    ctx1.stroke();
+                    // const canvas = document.createElement('canvas');
+                    // const context = canvas.getContext('2d');
+                    // const scaledWidth = videoElement.videoWidth;
+                    // const scaledHeight = videoElement.videoHeight;
+                    // canvas.width = scaledWidth;
+                    // canvas.height = scaledHeight;
+
+                    // //水平翻转
+                    // context.scale(-1, 1);
+                    // context.translate(-scaledWidth, 0);
+                    // context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
+                    // context.beginPath();
+                    // context.rect(data.x, data.y, data.w, data.h);
+                    // context.strokeStyle = 'green';
+                    // context.stroke();
+                    // imageElement.src = canvas.toDataURL()
+                })
+
+            if (message.startsWith("an")) {
+                audioElement.src = '/audio?' + Date.now();
+                audioElement.play();
             }
         }
+    }
 
-        // 创建WebSocket连接并监听消息
-        const socket = io();
-        socket.on('connect', () => {
-            console.log('Connected to server');
-        });
-        socket.on('message', handleWebSocketMessage);
+    // 创建WebSocket连接并监听消息
+    const socket = io();
+    socket.on('connect', () => {
+        console.log('Connected to server');
+    });
+    socket.on('message', handleWebSocketMessage);
 
-        async function captureAndSendFrameAsync() {
-            while (true) {
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                const scaledWidth = videoElement.videoWidth / 2; // 缩小一半的宽度
-                const scaledHeight = videoElement.videoHeight / 2; // 缩小一半的高度
-                canvas.width = scaledWidth;
-                canvas.height = scaledHeight;
-                context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
-                const imageData = canvas.toDataURL('image/jpeg');
+    async function captureAndSendFrameAsync() {
+        while (true) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            const scaledWidth = videoElement.videoWidth / 2; // 缩小一半的宽度
+            const scaledHeight = videoElement.videoHeight / 2; // 缩小一半的高度
+            canvas.width = scaledWidth;
+            canvas.height = scaledHeight;
+            context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
+            const imageData = canvas.toDataURL('image/jpeg');
 
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '/process_frame', true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        const response = xhr.responseText;
-                        // 发送到后端处理的图像帧也通过WebSocket发送到前端显示
-                        socket.emit('message', response);
-                    }
-                };
-                xhr.send(JSON.stringify({ frame: imageData }));
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/process_frame', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const response = xhr.responseText;
+                    // 发送到后端处理的图像帧也通过WebSocket发送到前端显示
+                    socket.emit('message', response);
+                }
+            };
+            xhr.send(JSON.stringify({ frame: imageData }));
 
-                await new Promise(resolve => setTimeout(resolve, 30)); // 休眠0.01秒
-            }
+            await new Promise(resolve => setTimeout(resolve, 30)); // 休眠0.01秒
         }
+    }
 
-        // 调用async函数
-        captureAndSendFrameAsync();
-    </script>
+    // 调用async函数
+    captureAndSendFrameAsync();
+</script>
 </body>
 
 </html>
