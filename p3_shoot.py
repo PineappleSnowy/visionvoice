@@ -49,8 +49,10 @@ def detect_face(img, direct_value, w, h):
         cv2.rectangle(img, (int(xmin * w), int(ymin * h)),
                       (int((xmin + width) * w), int((ymin + height) * h)),
                       (0, 255, 0), 2)
+        return int(xmin * w), int(ymin * h), int(width * w), int(height * h)
     else:
         direct_value.value = -1
+        return 0, 0, 0, 0
 
 
 def draw_const_face(img):

@@ -62,22 +62,32 @@
 
     // 添加按钮点击事件监听器
     shootButton.addEventListener('click', () => {
-    // 向后端发送信号
-    socket.emit('message', 'shoot');
-    if(document.getElementById("shootButton").innerHTML=="拍照")
-        document.getElementById("shootButton").innerHTML = "再拍一张";
-    else
-        document.getElementById("shootButton").innerHTML = "拍照";
+        // 向后端发送信号
+        socket.emit('message', 'shoot');
+        if(document.getElementById("shootButton").innerHTML=="拍照")
+            document.getElementById("shootButton").innerHTML = "再拍一张";
+        else
+            document.getElementById("shootButton").innerHTML = "拍照";
     });
 
     // 处理WebSocket消息
     function handleWebSocketMessage(message) {
-        if (message.startsWith("im"))
-        imageElement.src = '/video_feed?' + Date.now();
-        else if (message.startsWith("an")) {
-        imageElement.src = '/video_feed?' + Date.now();
-        audioElement.src = '/audio?' + Date.now();
-        audioElement.play();
+        if (message.startsWith("im") || message.startsWith("an")) {
+            const tempImage = new Image();
+            tempImage.src = '/video_feed?' + Date.now();
+            tempImage.onload = function() {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = tempImage.width * 2;
+                canvas.height = tempImage.height * 2;
+                context.scale(2, 2);
+                context.drawImage(tempImage, 0, 0);
+                imageElement.src = canvas.toDataURL();
+                };
+            if (message.startsWith("an")) {
+            audioElement.src = '/audio?' + Date.now();
+            audioElement.play();
+            }
         }
     }
 
@@ -88,13 +98,15 @@
     });
     socket.on('message', handleWebSocketMessage);
 
-    // 每隔30毫秒从视频流中获取一帧，并通过XHR发送到Flask后端
-    function captureAndSendFrame() {
+    async function captureAndSendFrameAsync() {
+    while (true) {
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        canvas.width = videoElement.videoWidth;
-        canvas.height = videoElement.videoHeight;
-        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        const scaledWidth = videoElement.videoWidth / 2; // 缩小一半的宽度
+        const scaledHeight = videoElement.videoHeight / 2; // 缩小一半的高度
+        canvas.width = scaledWidth;
+        canvas.height = scaledHeight;
+        context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
         const imageData = canvas.toDataURL('image/jpeg');
 
         const xhr = new XMLHttpRequest();
@@ -109,11 +121,12 @@
         };
         xhr.send(JSON.stringify({ frame: imageData }));
 
-        setTimeout(captureAndSendFrame, 30);
+        await new Promise(resolve => setTimeout(resolve, 10)); // 休眠0.01秒
     }
+}
 
-    // 开始定时获取视频帧并发送给后端
-    captureAndSendFrame();
+// 调用async函数
+captureAndSendFrameAsync();
 </script>
 </body>
 </html>

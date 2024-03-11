@@ -1,6 +1,6 @@
 import time
 import cv2
-from flask import Flask, request, render_template, Response, send_file
+from flask import Flask, request, render_template, Response, send_file, jsonify
 from flask_cors import CORS
 import base64
 import numpy as np
@@ -31,20 +31,22 @@ def final_realize():
     image = None
     temp = time.time()  # 方向提示音频播放时长
     temp2 = time.time()  # 页面加载等待及欢迎音频播放时长
+    X , Y, W, H = 0, 0, 0, 0
 
-    @app.after_request
-    def add_header(response):
-        response.headers['Access-Control-Allow-Origin'] = '*'  # 允许所有域名跨域访问
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'  # 允许的请求头
-        response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'  # 允许的HTTP方法
-
-        return response
+    # @app.after_request
+    # def add_header(response):
+    #     response.headers['Access-Control-Allow-Origin'] = '*'  # 允许所有域名跨域访问
+    #     response.headers['Access-Control-Allow-Headers'] = 'Content-Type'  # 允许的请求头
+    #     response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'  # 允许的HTTP方法
+    #
+    #     return response
 
     @app.route('/')
     def index():
         # 初始化参数信息
-        nonlocal temp2
+        nonlocal temp2, X , Y, W, H
         temp2 = time.time()
+        X , Y, w, h = 0, 0, 0, 0
         judge.value = True
         judge2.value = True
         shoot.value = False
@@ -55,7 +57,7 @@ def final_realize():
     # 处理从前端传来的视频帧
     @app.route('/process_frame', methods=['GET', 'POST'])
     def process_frame():
-        nonlocal img, image, temp
+        nonlocal img, image, temp, X , Y, W, H
         if judge.value:
             # 开始四秒等待用户前端界面加载完成，然后播放开始音频
             if time.time() - temp2 > 4:
@@ -75,7 +77,7 @@ def final_realize():
             if time.time() - temp2 < 8:
                 # 播放欢迎音频时框出人脸并反馈方位
                 height_, width_ = img.shape[:2]
-                detect_face(img, direction, width_, height_)
+                X , Y, W, H = detect_face(img, direction, width_, height_)
                 image = cv2.imencode('.jpg', img)[1].tobytes()
                 return "image"
             if shoot3.value:
@@ -88,7 +90,7 @@ def final_realize():
             if not shoot.value:
                 # 常态下框出人脸并反馈方位
                 height_, width_ = img.shape[:2]
-                detect_face(img, direction, width_, height_)
+                X , Y, W, H = detect_face(img, direction, width_, height_)
             else:
                 # 此时shoot==True，拍照，不画人脸框
                 shoot2.value = True
@@ -114,7 +116,8 @@ def final_realize():
     @app.route('/video_feed')
     def video_feed():
         # 访问gen()函数，返回图片字节信息
-        return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+        # return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+        return jsonify({'x': X, 'y': Y, 'w': W, 'h': H})
 
     @app.route('/audio')
     def audio():
