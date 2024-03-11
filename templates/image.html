@@ -1,132 +1,161 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Intelligent Camera</title>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-    <meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=0.85, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=0.85, user-scalable=0"> -->
     <style>
         #shootButton {
             position: absolute;
-            top: 92.5%; /* 按钮组件垂直位置 */
-            left: 50%; /* 按钮组件水平位置 */
-            transform: translate(-50%, -50%); /* 使用transform属性完成居中 */
-            width: 100%; /* 按钮宽度占页面总宽度的% */
-            height: 15%; /* 按钮高度占页面总高度的% */
-            opacity: 0.0; /* 设置按钮透明度为70% */
+            top: 92.5%;
+            /* 按钮组件垂直位置 */
+            left: 50%;
+            /* 按钮组件水平位置 */
+            transform: translate(-50%, -50%);
+            /* 使用transform属性完成居中 */
+            width: 100%;
+            /* 按钮宽度占页面总宽度的% */
+            height: 15%;
+            /* 按钮高度占页面总高度的% */
+            opacity: 0.0;
+            /* 设置按钮透明度为70% */
             background-color: orange;
         }
+
         #shootButton:active {
             opacity: 0.2;
         }
+
         #audioElement {
             display: none;
         }
-        html, body {
+
+        html,
+        body {
             overflow: hidden;
             height: 100%;
             background-color: black;
         }
     </style>
 </head>
+
 <body>
-<img id="imageElement" src='/video_feed'>
-<video id="videoElement" autoplay></video>
-<button id="shootButton" style="font-size: 30px;">拍照</button>
-<audio id="audioElement" controls></audio>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-<script>
-    // 获取video、image、audio元素
-    const videoElement = document.getElementById('videoElement');
-    const imageElement = document.getElementById('imageElement');
-    const audioElement = document.getElementById('audioElement');
-    const shootButton = document.getElementById('shootButton');
-    // 隐藏原始摄像头画面
-    videoElement.style.display = 'none';
+    <img id="imageElement" alt="这是一个描述图像内容的替代文本"
+        src="C:/Users/14704/PycharmProjects/pythonProject1/product_test/android_test/product_web/md_img/r_地址栏.png">
+    <video id="videoElement" autoplay></video>
+    <button id="shootButton" style="font-size: 30px;">拍照</button>
+    <audio id="audioElement" controls></audio>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        // 获取video、image、audio元素
+        const videoElement = document.getElementById('videoElement');
+        const imageElement = document.getElementById('imageElement');
+        const audioElement = document.getElementById('audioElement');
+        const shootButton = document.getElementById('shootButton');
+        // 隐藏原始摄像头画面
+        videoElement.style.display = 'none';
 
-    // 摄像头流处理函数
-    function handleCameraStream(stream) {
-        // 将摄像头流附加到video元素
-        videoElement.srcObject = stream;
-    }
+        // 摄像头流处理函数
+        function handleCameraStream(stream) {
+            // 将摄像头流附加到video元素
+            videoElement.srcObject = stream;
+        }
 
-    // 处理摄像头访问错误
-    function handleCameraError(error) {
-        console.error('Camera access denied!', error);
-    }
+        // 处理摄像头访问错误
+        function handleCameraError(error) {
+            console.error('Camera access denied!', error);
+        }
 
-    // 请求访问摄像头
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(handleCameraStream)
-        .catch(handleCameraError);
+        // 请求访问摄像头
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(handleCameraStream)
+            .catch(handleCameraError);
 
-    // 添加按钮点击事件监听器
-    shootButton.addEventListener('click', () => {
-        // 向后端发送信号
-        socket.emit('message', 'shoot');
-        if(document.getElementById("shootButton").innerHTML=="拍照")
-            document.getElementById("shootButton").innerHTML = "再拍一张";
-        else
-            document.getElementById("shootButton").innerHTML = "拍照";
-    });
+        // 添加按钮点击事件监听器
+        shootButton.addEventListener('click', () => {
+            // 向后端发送信号
+            socket.emit('message', 'shoot');
+            if (document.getElementById("shootButton").innerHTML == "拍照")
+                document.getElementById("shootButton").innerHTML = "再拍一张";
+            else
+                document.getElementById("shootButton").innerHTML = "拍照";
+        });
 
-    // 处理WebSocket消息
-    function handleWebSocketMessage(message) {
-        if (message.startsWith("im") || message.startsWith("an")) {
-            const tempImage = new Image();
-            tempImage.src = '/video_feed?' + Date.now();
-            tempImage.onload = function() {
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.width = tempImage.width * 2;
-                canvas.height = tempImage.height * 2;
-                context.scale(2, 2);
-                context.drawImage(tempImage, 0, 0);
-                imageElement.src = canvas.toDataURL();
-                };
-            if (message.startsWith("an")) {
-            audioElement.src = '/audio?' + Date.now();
-            audioElement.play();
+        // 处理WebSocket消息
+        function handleWebSocketMessage(message) {
+            if (message.startsWith("im") || message.startsWith("an")) {
+                fetch('/video_feed', {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        const scaledWidth = videoElement.videoWidth;
+                        const scaledHeight = videoElement.videoHeight;
+                        canvas.width = scaledWidth;
+                        canvas.height = scaledHeight;
+
+                        //水平翻转
+                        context.scale(-1, 1);
+                        context.translate(-scaledWidth, 0);
+                        context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
+                        context.beginPath();
+                        context.rect(data.x, data.y, data.w, data.h);
+                        context.strokeStyle = 'green';
+                        context.stroke();
+                        imageElement.src = canvas.toDataURL()
+                    })
+
+                if (message.startsWith("an")) {
+                    audioElement.src = '/audio?' + Date.now();
+                    audioElement.play();
+                }
             }
         }
-    }
 
-    // 创建WebSocket连接并监听消息
-    const socket = io();
-    socket.on('connect', () => {
-        console.log('Connected to server');
-    });
-    socket.on('message', handleWebSocketMessage);
+        // 创建WebSocket连接并监听消息
+        const socket = io();
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+        socket.on('message', handleWebSocketMessage);
 
-    async function captureAndSendFrameAsync() {
-    while (true) {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        const scaledWidth = videoElement.videoWidth / 2; // 缩小一半的宽度
-        const scaledHeight = videoElement.videoHeight / 2; // 缩小一半的高度
-        canvas.width = scaledWidth;
-        canvas.height = scaledHeight;
-        context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
-        const imageData = canvas.toDataURL('image/jpeg');
+        async function captureAndSendFrameAsync() {
+            while (true) {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                const scaledWidth = videoElement.videoWidth / 2; // 缩小一半的宽度
+                const scaledHeight = videoElement.videoHeight / 2; // 缩小一半的高度
+                canvas.width = scaledWidth;
+                canvas.height = scaledHeight;
+                context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
+                const imageData = canvas.toDataURL('image/jpeg');
 
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/process_frame', true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                const response = xhr.responseText;
-                // 发送到后端处理的图像帧也通过WebSocket发送到前端显示
-                socket.emit('message', response);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/process_frame', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        const response = xhr.responseText;
+                        // 发送到后端处理的图像帧也通过WebSocket发送到前端显示
+                        socket.emit('message', response);
+                    }
+                };
+                xhr.send(JSON.stringify({ frame: imageData }));
+
+                await new Promise(resolve => setTimeout(resolve, 100)); // 休眠0.01秒
             }
-        };
-        xhr.send(JSON.stringify({ frame: imageData }));
+        }
 
-        await new Promise(resolve => setTimeout(resolve, 10)); // 休眠0.01秒
-    }
-}
-
-// 调用async函数
-captureAndSendFrameAsync();
-</script>
+        // 调用async函数
+        captureAndSendFrameAsync();
+    </script>
 </body>
+
 </html>

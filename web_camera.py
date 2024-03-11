@@ -72,7 +72,7 @@ def final_realize():
         try:
             # 将numpy数组转换为OpenCV的图像对象
             img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-            img = cv2.flip(img, 1)
+            # img = cv2.flip(img, 1)
             # 等待开始音频播放完毕
             if time.time() - temp2 < 8:
                 # 播放欢迎音频时框出人脸并反馈方位
