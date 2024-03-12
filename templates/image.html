@@ -65,6 +65,8 @@
         let Y = 0;
         let W = 0;
         let H = 0;
+        let time_ = 100;
+        let shoot = false;
 
         // 摄像头流处理函数
         function handleCameraStream(stream) {
@@ -86,28 +88,27 @@
         shootButton.addEventListener('click', () => {
             // 向后端发送信号
             socket.emit('message', 'shoot');
-            if (document.getElementById("shootButton").innerHTML == "拍照")
+            if (document.getElementById("shootButton").innerHTML == "拍照") {
                 document.getElementById("shootButton").innerHTML = "再拍一张";
-            else
+                shoot = true;
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+                //水平翻转
+                ctx1.scale(-1, 1);
+                ctx1.translate(-canvasElement.width, 0);
+                ctx1.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                ctx1.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+            }
+            else {
+                shoot = false;
                 document.getElementById("shootButton").innerHTML = "拍照";
+            }
         });
 
         // 处理WebSocket消息
         function handleWebSocketMessage(message) {
-            canvasElement.width = videoElement.videoWidth;
-            canvasElement.height = videoElement.videoHeight;
-            //水平翻转
-            ctx1.scale(-1, 1);
-            ctx1.translate(-canvasElement.width, 0);
-            ctx1.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            ctx1.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-            ctx1.lineWidth = 3; // 设置线条宽度为2像素
-            ctx1.beginPath();
-            ctx1.rect(X, Y, W, H);
-            ctx1.strokeStyle = 'green';
-            ctx1.stroke();
-            if (message.startsWith("im") || message.startsWith("an")) {
-                fetch('/video_feed', {
+            if (message == 'i' || message == 'a') {
+                fetch('/face_loc', {
                     headers: {
                         'Content-Type': 'application/json'
                     }
@@ -118,22 +119,9 @@
                         Y = data.y;
                         W = data.w;
                         H = data.h;
-                        
-                        canvasElement.width = videoElement.videoWidth;
-                        canvasElement.height = videoElement.videoHeight;
-                        //水平翻转
-                        ctx1.scale(-1, 1);
-                        ctx1.translate(-canvasElement.width, 0);
-                        ctx1.clearRect(0, 0, canvasElement.width, canvasElement.height);
-                        ctx1.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-                        ctx1.lineWidth = 3; // 设置线条宽度为2像素
-                        ctx1.beginPath();
-                        ctx1.rect(X, Y, W, H);
-                        ctx1.strokeStyle = 'green';
-                        ctx1.stroke();
                     })
 
-                if (message.startsWith("an")) {
+                if (message == 'a') {
                     audioElement.src = '/audio?' + Date.now();
                     audioElement.play();
                 }
@@ -149,41 +137,48 @@
 
         async function captureAndSendFrameAsync() {
             while (true) {
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                const scaledWidth = videoElement.videoWidth / 2; // 缩小一半的宽度
-                const scaledHeight = videoElement.videoHeight / 2; // 缩小一半的高度
-                canvas.width = scaledWidth;
-                canvas.height = scaledHeight;
-                context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
-                const imageData = canvas.toDataURL('image/jpeg');
+                if (time_ > 30) {
+                    time_ = 0;
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    const scaledWidth = videoElement.videoWidth / 2; // 缩小一半的宽度
+                    const scaledHeight = videoElement.videoHeight / 2; // 缩小一半的高度
+                    canvas.width = scaledWidth;
+                    canvas.height = scaledHeight;
+                    context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
+                    const imageData = canvas.toDataURL('image/jpeg');
 
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '/process_frame', true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        const response = xhr.responseText;
-                        // 发送到后端处理的图像帧也通过WebSocket发送到前端显示
-                        socket.emit('message', response);
-                    }
-                };
-                xhr.send(JSON.stringify({ frame: imageData }));
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/process_frame', true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            const response = xhr.responseText;
+                            // 发送到后端处理的图像帧也通过WebSocket发送到前端显示
+                            socket.emit('message', response);
+                        }
+                    };
+                    xhr.send(JSON.stringify({ frame: imageData }));
+                }
 
-                canvasElement.width = videoElement.videoWidth;
-                canvasElement.height = videoElement.videoHeight;
-                //水平翻转
-                ctx1.scale(-1, 1);
-                ctx1.translate(-canvasElement.width, 0);
-                ctx1.clearRect(0, 0, canvasElement.width, canvasElement.height);
-                ctx1.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-                ctx1.lineWidth = 3; // 设置线条宽度为2像素
-                ctx1.beginPath();
-                ctx1.rect(X, Y, W, H);
-                ctx1.strokeStyle = 'green';
-                ctx1.stroke();
+                if (!shoot) {
+                    canvasElement.width = videoElement.videoWidth;
+                    canvasElement.height = videoElement.videoHeight;
+                    //水平翻转
+                    ctx1.scale(-1, 1);
+                    ctx1.translate(-canvasElement.width, 0);
+                    ctx1.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    ctx1.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+                    ctx1.lineWidth = 3; // 设置线条宽度为2像素
+                    ctx1.beginPath();
+                    ctx1.rect(X, Y, W, H);
+                    ctx1.strokeStyle = 'green';
+                    ctx1.stroke();
+                    time_ += 1;
+                }
 
-                await new Promise(resolve => setTimeout(resolve, 1000)); // 休眠0.01秒
+
+                await new Promise(resolve => setTimeout(resolve, 30)); // 休眠0.01秒
             }
         }
 
