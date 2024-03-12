@@ -22,10 +22,10 @@ def final_realize():
     CORS(app)
     socketio = SocketIO(app)
     direction = multiprocessing.Value('i', 0)  # 人脸位置标签
-    judge = multiprocessing.Value('b', True)  # 判断是否播放欢饮音频
-    judge2 = multiprocessing.Value('b', True)  # 播放欢迎音频的音频选择标签
+    wait_start = multiprocessing.Value('b', True)  # 判断是否播放欢饮音频
+    welcome = multiprocessing.Value('b', True)  # 播放欢迎音频的音频选择标签
     shoot = multiprocessing.Value('b', False)  # 拍照
-    shoot2 = multiprocessing.Value('b', False)  # 播放拍照成功音频
+    success_an = multiprocessing.Value('b', False)  # 播放拍照成功音频
     shoot3 = multiprocessing.Value('b', False)  # 保持拍照后画面静止
     img = None
     temp2 = time.time()  # 页面加载等待及欢迎音频播放时长
@@ -44,21 +44,21 @@ def final_realize():
         # 初始化参数信息
         nonlocal temp2, X, Y, W, H
         temp2 = time.time()
-        X, Y, w, h = 0, 0, 0, 0
-        judge.value = True
-        judge2.value = True
+        X, Y, W, H = 0, 0, 0, 0
+        wait_start.value = True
+        welcome.value = True
         shoot.value = False
-        shoot2.value = False
+        success_an.value = False
         return render_template('image.html')
 
     # 处理从前端传来的视频帧
     @app.route('/process_frame', methods=['GET', 'POST'])
     def process_frame():
         nonlocal img, X, Y, W, H
-        if judge.value:
+        if wait_start.value:
             # 开始四秒等待用户前端界面加载完成，然后播放开始音频
             if time.time() - temp2 > 4:
-                judge.value = False
+                wait_start.value = False
                 return "a"
         frame_data = request.get_json()
         frame = frame_data['frame']
@@ -103,10 +103,10 @@ def final_realize():
     @app.route('/audio')
     def audio():
         filename = "output.wav"  # 音频文件的路径
-        if judge2.value:  # 判断是否播放欢迎音频
-            judge2.value = False
+        if welcome.value:  # 判断是否播放欢迎音频
+            welcome.value = False
             save_audio("欢迎使用视界之声智慧拍照")
-        elif shoot2.value:
+        elif success_an.value:
             save_audio("拍照成功")
         elif direction.value == 1:
             save_audio("向右")
@@ -128,7 +128,7 @@ def final_realize():
         # message内容包括后端路由文本返回值以及前端发来的文本消息
         if message == "shoot":
             shoot.value = not shoot.value
-            shoot2.value = not shoot2.value
+            success_an.value = not success_an.value
             if shoot.value:
                 emit('message', 'a')
         else:
