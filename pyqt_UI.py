@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
         self.tip_label.setStyleSheet("color: %s;" % color.name())
 
         self.text_label = QLabel(self)
-        self.text_label.setText("登录visionvoice官网了解我们的更多信息。\nhttps://visionvoice.geek-tech.group/")
+        self.text_label.setText("登录visionvoice官网了解我们的更多信息。\n      https://visionvoice.life")
         font = QFont()
         font.setPointSize(15)
         self.text_label.setFont(font)
