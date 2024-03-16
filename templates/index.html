@@ -71,6 +71,7 @@
 
         // 添加按钮点击事件监听器
         restartButton.addEventListener('click', () => {
+            finish = false
             // 向后端发送信号
             socket.emit('message', 'Restarted!');
         });
@@ -93,9 +94,6 @@
                 audioElement.play();
                 if (message == "audio_a") {
                     finish = true
-                }
-                else {
-                    finish = false
                 }
             }
             else {
