@@ -16,7 +16,7 @@ restart = False
 model_process = multiprocessing.Process()
 model_process2 = multiprocessing.Process()
 # 添加到环境识别的最大图片数量
-max_img_num = 3
+max_img_num = 2
 
 
 def analyse_img_process(flag_, img_data_list_, scene_value_, answer_value_):
@@ -107,7 +107,7 @@ def final_realize():
                     "欢迎使用视界之声环境识别。听到录像开始后请缓慢地转动镜头，总时长15秒，"
                     "我将根据镜头画面识别当前环境。当画面重复时我会自动停止。录像开始")
                 # output会发送给前端，使前端向后端请求音频
-                return "output"
+                return "audio_s"
         # 18秒等待欢饮音频播放完毕
         if not time.time() - temp > 18:
             return ""
@@ -138,7 +138,7 @@ def final_realize():
             # 进入语音播报阶段
             elif flag.value == max_img_num + 3:
                 flag.value = max_img_num + 4
-                return "output"
+                return "audio_a"
             else:
                 return "视界之声的回答：\n  " + answer_value.value
         # 异常时可能会运行到这里
