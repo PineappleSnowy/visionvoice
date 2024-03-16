@@ -5,28 +5,68 @@
     <title>Intelligent Camera</title>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=0.85, user-scalable=0"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=0.7, maximum-scale=0.7, user-scalable=0">
     <style>
+        #headText {
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgb(190, 190, 190);
+            /* 修改字体颜色为灰色 */
+            font-size: 22px;
+            /* font-weight: bold; */
+        }
+
+        #bottomText {
+            text-align: center;
+            position: absolute;
+            bottom: 5%;
+            width: 100%;
+            color: rgb(210, 210, 210);
+            font-size: 24px;
+        }
+
+        #canvasElement {
+            position: absolute;
+            top: 11%;
+            /* 视频组件垂直位置 */
+            left: 3.5%;
+            /* 视频组件水平位置 */
+        }
+
         #shootButton {
             position: absolute;
-            top: 92.5%;
-            /* 按钮组件垂直位置 */
+            top: 75%;
             left: 50%;
-            /* 按钮组件水平位置 */
             transform: translate(-50%, -50%);
-            /* 使用transform属性完成居中 */
             width: 100%;
-            /* 按钮宽度占页面总宽度的% */
-            height: 15%;
-            /* 按钮高度占页面总高度的% */
+            height: 50%;
             opacity: 0.0;
-            /* 设置按钮透明度为70% */
             background-color: orange;
+            color: white;
+            font-size: 30px;
         }
 
         #shootButton:active {
-            opacity: 0.2;
+            opacity: 0.3;
+        }
+
+        #saveButton {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 50%;
+            opacity: 0.0;
+            background-color: green;
+            color: white;
+            font-size: 30px;
+        }
+
+        #saveButton:active {
+            opacity: 0.3;
         }
 
         #audioElement {
@@ -43,21 +83,23 @@
 </head>
 
 <body>
-    <!-- <img id="imageElement" alt="这是一个描述图像内容的替代文本"
-    src="C:/Users/14704/PycharmProjects/pythonProject1/product_test/android_test/product_web/md_img/r_地址栏.png"> -->
+    <div id="headText">Powered by <u>VisionVoice</u></div> <!-- 给"VisionVoice"添加下划线 -->
     <canvas id="canvasElement"></canvas>
     <video id="videoElement" autoplay></video>
-    <button id="shootButton" style="font-size: 30px;">拍照</button>
+    <button id="shootButton">拍照</button>
+    <button id="saveButton">保存照片</button>
     <audio id="audioElement" controls></audio>
+    <div id="bottomText">点击屏幕下部<span style="color: orange;">拍照</span>或<span
+            style="color: red;">再拍一张</span><br><br>点击屏幕上部<span style="color: green;">保存照片</span></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
-        // 获取video、image、audio元素
+        // 获取元素
         const videoElement = document.getElementById('videoElement');
-        // const imageElement = document.getElementById('imageElement');
         const canvasElement = document.getElementById('canvasElement');
         const ctx1 = canvasElement.getContext('2d');
         const audioElement = document.getElementById('audioElement');
         const shootButton = document.getElementById('shootButton');
+        const saveButton = document.getElementById('saveButton');
         // 隐藏原始摄像头画面
         videoElement.style.display = 'none';
 
@@ -70,7 +112,6 @@
 
         // 摄像头流处理函数
         function handleCameraStream(stream) {
-            // 将摄像头流附加到video元素
             videoElement.srcObject = stream;
         }
 
@@ -84,24 +125,35 @@
             .then(handleCameraStream)
             .catch(handleCameraError);
 
-        // 添加按钮点击事件监听器
+        // 添加拍照按钮点击事件监听器
         shootButton.addEventListener('click', () => {
-            // 向后端发送信号
             socket.emit('message', 'shoot');
-            if (document.getElementById("shootButton").innerHTML == "拍照") {
-                document.getElementById("shootButton").innerHTML = "再拍一张";
+            if (shootButton.innerHTML == "拍照") {
                 shoot = true;
                 canvasElement.width = videoElement.videoWidth;
                 canvasElement.height = videoElement.videoHeight;
-                //水平翻转
                 ctx1.scale(-1, 1);
                 ctx1.translate(-canvasElement.width, 0);
                 ctx1.clearRect(0, 0, canvasElement.width, canvasElement.height);
                 ctx1.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+                shootButton.innerHTML = "再拍一张";
+                shootButton.style.backgroundColor = 'red';
             }
             else {
                 shoot = false;
-                document.getElementById("shootButton").innerHTML = "拍照";
+                shootButton.innerHTML = "拍照";
+                shootButton.style.backgroundColor = 'orange';
+            }
+        });
+
+        // 保存图片按钮点击事件监听器
+        saveButton.addEventListener('click', () => {
+            if (shoot) {
+                const image = canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = 'photo.png';
+                link.click();
             }
         });
 
@@ -141,8 +193,8 @@
                     time_ = 0;
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
-                    const scaledWidth = videoElement.videoWidth / 2; // 缩小一半的宽度
-                    const scaledHeight = videoElement.videoHeight / 2; // 缩小一半的高度
+                    const scaledWidth = videoElement.videoWidth / 2;
+                    const scaledHeight = videoElement.videoHeight / 2;
                     canvas.width = scaledWidth;
                     canvas.height = scaledHeight;
                     context.drawImage(videoElement, 0, 0, scaledWidth, scaledHeight);
@@ -154,7 +206,6 @@
                     xhr.onreadystatechange = function () {
                         if (xhr.readyState === 4 && xhr.status === 200) {
                             const response = xhr.responseText;
-                            // 发送到后端处理的图像帧也通过WebSocket发送到前端显示
                             socket.emit('message', response);
                         }
                     };
@@ -164,12 +215,11 @@
                 if (!shoot) {
                     canvasElement.width = videoElement.videoWidth;
                     canvasElement.height = videoElement.videoHeight;
-                    //水平翻转
                     ctx1.scale(-1, 1);
                     ctx1.translate(-canvasElement.width, 0);
                     ctx1.clearRect(0, 0, canvasElement.width, canvasElement.height);
                     ctx1.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-                    ctx1.lineWidth = 3; // 设置线条宽度为2像素
+                    ctx1.lineWidth = 3;
                     ctx1.beginPath();
                     ctx1.rect(X, Y, W, H);
                     ctx1.strokeStyle = 'green';
@@ -177,8 +227,7 @@
                     time_ += 1;
                 }
 
-
-                await new Promise(resolve => setTimeout(resolve, 30)); // 休眠0.01秒
+                await new Promise(resolve => setTimeout(resolve, 30));
             }
         }
 
