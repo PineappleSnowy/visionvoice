@@ -158,7 +158,8 @@ def final_realize():
         # 向前端发送接收到的文本消息
         emit('message', message)
 
-    socketio.run(app, host='0.0.0.0', port=5000, log_output=True, use_reloader=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=5000,
+                 log_output=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':

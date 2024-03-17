@@ -105,9 +105,27 @@
                 messageContainer.appendChild(messageElement);
             }
         }
+        
+        //添加一个变量来保存用户是否有后置摄像头的信息
+        let hasBackCamera = false;
 
-        // 请求访问摄像头
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
+        // 获取用户所有的摄像头设备信息
+        navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+                // 遍历所有的设备信息
+                devices.forEach(device => {
+                    // 判断是否有后置摄像头
+                    if (device.kind === 'videoinput' && device.label.toLowerCase().includes('back')) {
+                        hasBackCamera = true;
+                    }
+                });
+
+                // 根据是否有后置摄像头来选择调用哪一个摄像头
+                const cameraType = hasBackCamera ? 'environment' : 'user';
+
+                // 请求访问摄像头
+                return navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: cameraType } } });
+            })
             .then(handleCameraStream)
             .catch(handleCameraError);
 
