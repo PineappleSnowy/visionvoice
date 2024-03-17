@@ -28,7 +28,7 @@
             /* 视频组件垂直位置 */
             left: 3.5%;
             /* 视频组件水平位置 */
-            transform: scaleX(-1);
+            /* transform: scaleX(-1); */
             /*水平翻转*/
         }
 
@@ -107,7 +107,7 @@
         }
 
         // 请求访问摄像头
-        navigator.mediaDevices.getUserMedia({ video: true })
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
             .then(handleCameraStream)
             .catch(handleCameraError);
 
