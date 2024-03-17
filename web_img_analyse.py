@@ -10,6 +10,8 @@ import ctypes
 from p3_ImageUnderstanding import spark_chat, image_understanding
 import pyttsx3
 
+app = Flask(__name__)
+
 # 初始化时间标志参量
 temp = time.time()
 restart = False
@@ -39,7 +41,6 @@ def save_audio(text):
 
 def final_realize():
     global model_process, model_process2
-    app = Flask(__name__)
     # CORS解决跨域访问问题
     CORS(app)
     socketio = SocketIO(app)

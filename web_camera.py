@@ -9,6 +9,8 @@ import pyttsx3
 import multiprocessing
 from p3_shoot import detect_face
 
+app = Flask(__name__)
+
 
 def save_audio(text):
     engine = pyttsx3.init()
@@ -17,7 +19,6 @@ def save_audio(text):
 
 
 def final_realize():
-    app = Flask(__name__)
     # CORS解决跨域访问问题
     CORS(app)
     socketio = SocketIO(app)
