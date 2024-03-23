@@ -158,8 +158,8 @@ def final_realize():
         # 向前端发送接收到的文本消息
         emit('message', message)
 
-    socketio.run(app, host='0.0.0.0', port=5000,
-                 log_output=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=443,
+                 log_output=True, allow_unsafe_werkzeug=True, ssl_context=(r"C:\Users\14704\Downloads\ssl_cert\pineapplesnowy.chat\pineapplesnowy.chat.pem", r"C:\Users\14704\Downloads\ssl_cert\pineapplesnowy.chat\pineapplesnowy.chat.key"))
 
 
 if __name__ == '__main__':
