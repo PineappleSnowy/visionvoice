@@ -35,7 +35,7 @@ def analyse_img_process(flag_, img_data_list_, scene_value_, answer_value_):
 
 def save_audio(text):
     engine = pyttsx3.init()
-    engine.save_to_file(text, "output.wav")
+    engine.save_to_file(text, "output.mp3")
     engine.runAndWait()
 
 
@@ -92,7 +92,7 @@ def final_realize():
     @app.route('/audio')
     def audio():
         filename = "output.wav"  # 音频文件的路径
-        return send_file(filename, mimetype='audio/wav')  # 返回音频文件
+        return send_file(filename, mimetype='audio/mp3')  # 返回音频文件
 
     # 处理从前端传来的视频帧
     @app.route('/process_frame', methods=['GET', 'POST'])

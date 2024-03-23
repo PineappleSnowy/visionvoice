@@ -14,7 +14,7 @@ app = Flask(__name__)
 
 def save_audio(text):
     engine = pyttsx3.init()
-    engine.save_to_file(text, "output.wav")
+    engine.save_to_file(text, "output.mp3")
     engine.runAndWait()
 
 
@@ -103,7 +103,7 @@ def final_realize():
 
     @app.route('/audio')
     def audio():
-        filename = "output.wav"  # 音频文件的路径
+        filename = "output.mp3"  # 音频文件的路径
         if welcome.value:  # 判断是否播放欢迎音频
             welcome.value = False
             save_audio("欢迎使用视界之声智慧拍照")
@@ -121,7 +121,7 @@ def final_realize():
             save_audio("看不到你")
         else:
             return ""
-        return send_file(filename, mimetype='audio/wav')  # 返回音频文件
+        return send_file(filename, mimetype='audio/mp3')  # 返回音频文件
 
     # 处理WebSocket连接和消息
     @socketio.on('message')
