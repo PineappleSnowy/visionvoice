@@ -8,7 +8,7 @@ import numpy as np
 from flask_socketio import SocketIO, emit
 import ctypes
 from p3_ImageUnderstanding import spark_chat, image_understanding
-import pyttsx3
+from speech_synthesis import audio_generate
 
 app = Flask(__name__)
 
@@ -34,9 +34,7 @@ def analyse_img_process(flag_, img_data_list_, scene_value_, answer_value_):
 
 
 def save_audio(text):
-    engine = pyttsx3.init()
-    engine.save_to_file(text, "output.mp3")
-    engine.runAndWait()
+    audio_generate(text, 'output')
 
 
 def final_realize():
@@ -91,7 +89,7 @@ def final_realize():
 
     @app.route('/audio')
     def audio():
-        filename = "output.wav"  # 音频文件的路径
+        filename = "output.mp3"  # 音频文件的路径
         return send_file(filename, mimetype='audio/mp3')  # 返回音频文件
 
     # 处理从前端传来的视频帧
@@ -159,7 +157,7 @@ def final_realize():
         emit('message', message)
 
     socketio.run(app, host='0.0.0.0', port=443,
-                 log_output=True, allow_unsafe_werkzeug=True, ssl_context=(r"C:\Users\14704\Downloads\ssl_cert\pineapplesnowy.chat\pineapplesnowy.chat.pem", r"C:\Users\14704\Downloads\ssl_cert\pineapplesnowy.chat\pineapplesnowy.chat.key"))
+                 log_output=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':

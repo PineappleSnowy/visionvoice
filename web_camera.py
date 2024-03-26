@@ -1,21 +1,20 @@
 import time
 import cv2
-from flask import Flask, request, render_template, Response, send_file, jsonify
+from flask import Flask, request, render_template, send_file, jsonify
 from flask_cors import CORS
 import base64
 import numpy as np
 from flask_socketio import SocketIO, emit
-import pyttsx3
+import edge_tts
 import multiprocessing
 from p3_shoot import detect_face
 
 app = Flask(__name__)
 
 
-def save_audio(text):
-    engine = pyttsx3.init()
-    engine.save_to_file(text, "output.mp3")
-    engine.runAndWait()
+async def save_audio(text):
+    tts = edge_tts.Communicate(text=text, voice='zh-CN-YunyangNeural')
+    await tts.save('output.mp3')
 
 
 def final_realize():
