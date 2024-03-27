@@ -28,7 +28,7 @@ SPD = 6
 # 音调，取值0-15，默认为5中语调
 PIT = 5
 # 音量，取值0-9，默认为5中音量
-VOL = 5
+VOL = 9
 # 下载的文件格式, 3：mp3(default) 4： pcm-16k 5： pcm-8k 6. wav
 AUE = 3
 
@@ -120,8 +120,11 @@ def audio_generate(TEXT, file_prefix):
 
 
 if __name__ == "__main__":
-    # audio_generate("欢迎使用视界之声环境识别！听到录像开始后请缓慢地转动镜头，总时长24秒，"
-    #                "我将根据镜头画面识别当前环境。当画面重复时我会自动停止。录像开始", 'welcome')
+    audio_generate("欢迎使用视界之声环境识别！听到录像开始后请缓慢地转动镜头，总时长24秒，"
+                   "我将根据镜头画面识别当前环境。当画面重复时我会自动停止。录像开始", 'welcome')
+    audio_generate("录像结束，开始识别周围环境",'record_end')
+    audio_generate("欢迎使用视界之声智慧拍照！",'start')
+    audio_generate("拍照成功！",'success')
     audio_generate("向左", 'left')
     audio_generate("向右", 'right')
     audio_generate("向上", 'up')

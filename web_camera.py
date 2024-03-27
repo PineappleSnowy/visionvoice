@@ -51,9 +51,8 @@ def final_realize():
         nonlocal img, X, Y, W, H
         if wait_start.value:
             # 开始四秒等待用户前端界面加载完成，然后播放开始音频
-            if time.time() - temp2 > 4:
-                wait_start.value = False
-                return "a"
+            wait_start.value = False
+            return "a"
         frame_data = request.get_json()
         frame = frame_data['frame']
         # 将Base64编码的图像数据解码为numpy数组

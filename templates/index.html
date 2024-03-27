@@ -56,118 +56,117 @@
 </head>
 
 <body>
-<button id="restartButton" style="font-size: 30px;">重新开始</button>
-<video id="videoElement" autoplay></video>
-<div id="messageContainer" style="font-size: 20px;"></div>
-<audio id="audioElement" controls></audio>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-<script>
-    // 获取video元素、message容器和audio元素
-    const videoElement = document.getElementById('videoElement');
-    const messageContainer = document.getElementById('messageContainer');
-    const audioElement = document.getElementById('audioElement');
-    const restartButton = document.getElementById('restartButton');
-    let finish = false
+    <button id="restartButton" style="font-size: 30px;">重新开始</button>
+    <video id="videoElement" autoplay></video>
+    <div id="messageContainer" style="font-size: 20px;"></div>
+    <audio id="audioElement" controls></audio>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        // 获取video元素、message容器和audio元素
+        const videoElement = document.getElementById('videoElement');
+        const messageContainer = document.getElementById('messageContainer');
+        const audioElement = document.getElementById('audioElement');
+        const restartButton = document.getElementById('restartButton');
+        let finish = false
 
-    // 添加按钮点击事件监听器
-    restartButton.addEventListener('click', () => {
-        finish = false
-        // 向后端发送信号
-        socket.emit('message', 'Restarted!');
-    });
+        // 添加按钮点击事件监听器
+        restartButton.addEventListener('click', () => {
+            finish = false
+            // 向后端发送信号
+            socket.emit('message', 'Restarted!');
+        });
 
-    // 摄像头流处理函数
-    function handleCameraStream(stream) {
-        // 将摄像头流附加到video元素
-        videoElement.srcObject = stream;
-    }
-
-    // 处理摄像头访问错误
-    function handleCameraError(error) {
-        console.error('Camera access denied!', error);
-    }
-
-    // 处理WebSocket消息
-    function handleWebSocketMessage(message) {
-        if (message.startsWith("audio")) {
-            audioElement.src = "/audio?" + Date.now();
-            audioElement.play();
-            if (message == "audio_a") {
-                finish = true
-            }
+        // 摄像头流处理函数
+        function handleCameraStream(stream) {
+            // 将摄像头流附加到video元素
+            videoElement.srcObject = stream;
         }
-        else {
+
+        // 处理摄像头访问错误
+        function handleCameraError(error) {
+            console.error('Camera access denied!', error);
+        }
+
+        // 处理WebSocket消息
+        function handleWebSocketMessage(message) {
+            if (message.startsWith("Welcome") || message.startsWith("环境识别中") || message.charAt(message.length - 1) == ')') {
+                audioElement.src = "/audio?" + Date.now();
+                audioElement.play();
+                if (message.charAt(message.length - 1) == ')') {
+                    finish = true
+                }
+            }
+
             // 清空文本
             messageContainer.innerHTML = ""
             // 在message容器中显示接收到的文本消息
             const messageElement = document.createElement('p');
             messageElement.innerText = message;
             messageContainer.appendChild(messageElement);
+
         }
-    }
 
-    //添加一个变量来保存用户是否有后置摄像头的信息
-    let hasBackCamera = false;
+        //添加一个变量来保存用户是否有后置摄像头的信息
+        let hasBackCamera = false;
 
-    // 获取用户所有的摄像头设备信息
-    navigator.mediaDevices.enumerateDevices()
-        .then(devices => {
-            // 遍历所有的设备信息
-            devices.forEach(device => {
-                // 判断是否有后置摄像头
-                if (device.kind === 'videoinput' && device.label.toLowerCase().includes('back')) {
-                    hasBackCamera = true;
+        // 获取用户所有的摄像头设备信息
+        navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+                // 遍历所有的设备信息
+                devices.forEach(device => {
+                    // 判断是否有后置摄像头
+                    if (device.kind === 'videoinput' && device.label.toLowerCase().includes('back')) {
+                        hasBackCamera = true;
+                    }
+                });
+                if (!hasBackCamera) {
+                    videoElement.style.transform = "scaleX(-1)";
                 }
-            });
-            if (!hasBackCamera)
-            {
-                videoElement.style.transform = "scaleX(-1)";
+                // 根据是否有后置摄像头来选择调用哪一个摄像头
+                const cameraType = hasBackCamera ? 'environment' : 'user';
+
+                // 请求访问摄像头
+                return navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: cameraType } } });
+            })
+            .then(handleCameraStream)
+            .catch(handleCameraError);
+
+        // 创建WebSocket连接并监听消息
+        const socket = io();
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+        socket.on('message', handleWebSocketMessage);
+
+        // 每隔30毫秒从视频流中获取一帧，并通过XHR发送到Flask后端
+        function captureAndSendFrame() {
+            if (!finish) {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg');
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/process_frame', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        const response = xhr.responseText;
+                        // 发送到后端处理的图像帧也通过WebSocket发送到前端显示
+                        socket.emit('message', response);
+                    }
+                };
+                xhr.send(JSON.stringify({ frame: imageData }));
             }
-            // 根据是否有后置摄像头来选择调用哪一个摄像头
-            const cameraType = hasBackCamera ? 'environment' : 'user';
 
-            // 请求访问摄像头
-            return navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: cameraType } } });
-        })
-        .then(handleCameraStream)
-        .catch(handleCameraError);
-
-    // 创建WebSocket连接并监听消息
-    const socket = io();
-    socket.on('connect', () => {
-        console.log('Connected to server');
-    });
-    socket.on('message', handleWebSocketMessage);
-
-    // 每隔30毫秒从视频流中获取一帧，并通过XHR发送到Flask后端
-    function captureAndSendFrame() {
-        if (!finish) {
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = videoElement.videoWidth;
-            canvas.height = videoElement.videoHeight;
-            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-            const imageData = canvas.toDataURL('image/jpeg');
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/process_frame', true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    const response = xhr.responseText;
-                    // 发送到后端处理的图像帧也通过WebSocket发送到前端显示
-                    socket.emit('message', response);
-                }
-            };
-            xhr.send(JSON.stringify({ frame: imageData }));
+            setTimeout(captureAndSendFrame, 5000);
         }
 
-        setTimeout(captureAndSendFrame, 5000);
-    }
-
-    // 开始定时获取视频帧并发送给后端
-    captureAndSendFrame();
-</script>
+        // 开始定时获取视频帧并发送给后端
+        captureAndSendFrame();
+    </script>
 </body>
 
 </html>

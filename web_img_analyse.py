@@ -96,10 +96,11 @@ def final_realize():
 
     @app.route('/audio')
     def audio():
-        filename = "output.mp3"  # 音频文件的路径
         if flag.value == 1:
             return send_file('welcome.mp3', mimetype='audio/mp3')
-        return send_file(filename, mimetype='audio/mp3')  # 返回音频文件
+        elif flag.value <= max_img_num + 2:
+            return send_file('record_end.mp3', mimetype='audio/mp3')
+        return send_file("output.mp3", mimetype='audio/mp3')  # 返回音频文件
 
     # 处理从前端传来的视频帧
     @app.route('/process_frame', methods=['GET', 'POST'])
@@ -107,15 +108,14 @@ def final_realize():
         global trainImage
         if restart:
             init()  # 重新开始
-        # 2秒钟等待网页加载，然后播放欢迎音频
-        if time.time() - temp > 2:
-            if flag.value == 0:
-                # 这里不使用+=是为了避免多次请求同时访问flag内存值时，其值不正常
-                flag.value = 1
-                # output会发送给前端，使前端向后端请求音频
-                return "audio_s"
+        # 播放欢迎音频
+        if flag.value == 0:
+            # 这里不使用+=是为了避免多次请求同时访问flag内存值时，其值不正常
+            flag.value = 1
+            # output会发送给前端，使前端向后端请求音频
+            return "Welcome!"
         # 18秒等待欢饮音频播放完毕
-        if not time.time() - temp > 18:
+        if not time.time() - temp > 13:
             return ""
         else:
             frame_data = request.get_json()
@@ -142,18 +142,16 @@ def final_realize():
                         flag.value = min(flag.value + 1, max_img_num + 1)
                 except Exception:
                     pass
-                return "视界之声的回答：\n  "
+                if flag.value == max_img_num + 1:
+                    return "环境识别中..."
+                return "视界之声正在收集环境信息..."
             # 正在进行最终环境识别，显示实时结果
             elif flag.value == max_img_num + 1:
                 return "视界之声的回答：\n  " + answer_value.value
-            # 最终环境识别结束，显示最终结果
+            # 最终环境识别结束，显示最终结果，并进行语音播报
             elif flag.value == max_img_num + 2:
                 flag.value += 1
-                return "视界之声的回答：\n  " + answer_value.value
-            # 进入语音播报阶段
-            elif flag.value == max_img_num + 3:
-                flag.value = max_img_num + 4
-                return "audio_a"
+                return "视界之声的回答：\n  " + answer_value.value + "(end)"
             else:
                 return "视界之声的回答：\n  " + answer_value.value
         # 异常时可能会运行到这里
