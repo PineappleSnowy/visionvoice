@@ -236,7 +236,6 @@ def spark_chat(img_data_list: list[str], curr_scene: str, answer_value_) -> str:
     Input = f"我当前身处的场景是{curr_scene}。\
     同时，我在我身处的环境中拍了几张图片，这几张图片可能有重复和矛盾的部分，请筛查并提取真实简练的图片信息。\
     请你根据我提供的场景信息和提取后的图片信息用客观真实的语言描述一下我当前所处的环境，100个字左右。\
-    如果我给出的场景信息和图片信息矛盾，请忽视场景信息，以图片信息为准。\
     你说的话里不能包含英文。\
     请你仅仅描述我当前所处的环境，不要输出别的话。以下是这些图片的信息。"
     for i, num in zip(img_data_list, range(len(img_data_list))):
