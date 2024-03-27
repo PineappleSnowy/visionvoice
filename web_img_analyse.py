@@ -10,6 +10,7 @@ import ctypes
 from p3_ImageUnderstanding import spark_chat, image_understanding
 from speech_synthesis import audio_generate
 from p3_match_and_stitcher import judge_equal_realize
+from place_365.app import predict_realize, calc_most_proba_scene
 
 app = Flask(__name__)
 
@@ -23,12 +24,14 @@ max_img_num = 4
 trainImage = None
 
 
-def analyse_img_process(flag_, img_data_list_, scene_value_, answer_value_):
+def analyse_img_process(flag_, img_data_list_, scene_list, answer_value_):
     while True:
         # 图片数量达到最大，开始环境识别最终阶段
         if flag_.value > max_img_num:
             break
-    spark_chat(img_data_list_, scene_value_, answer_value_)
+    scene = calc_most_proba_scene(scene_list)
+    print(f"scene:{scene}")
+    spark_chat(img_data_list_, scene, answer_value_)
     # 保存回答音频
     save_audio(answer_value_.value)
     # 更新flag状态标志
@@ -46,13 +49,13 @@ def final_realize():
     socketio = SocketIO(app)
     flag = multiprocessing.Value('i', 0)  # 状态标志
     img_data_list = multiprocessing.Manager().list([])  # 图片信息列表
-    scene_value = multiprocessing.Manager().Value(ctypes.c_char_p, "indoor")  # 场景分类
+    scene_list = multiprocessing.Manager().list([])  # 场景分类
     answer_value = multiprocessing.Manager().Value(ctypes.c_char_p, "")  # 回答
     # 这里定义了两个环境识别的进程，用于处理用户重新开始时的进程中止缓慢问题
     model_process = multiprocessing.Process(target=analyse_img_process,
-                                            args=(flag, img_data_list, scene_value, answer_value))
+                                            args=(flag, img_data_list, scene_list, answer_value))
     model_process2 = multiprocessing.Process(target=analyse_img_process,
-                                             args=(flag, img_data_list, scene_value, answer_value))
+                                             args=(flag, img_data_list, scene_list, answer_value))
 
     # 初始化各种参数并刷新进程
     def init():
@@ -67,21 +70,22 @@ def final_realize():
         if model_process.is_alive():
             model_process.terminate()
             model_process2 = multiprocessing.Process(target=analyse_img_process,
-                                                     args=(flag, img_data_list, scene_value, answer_value))
+                                                     args=(flag, img_data_list, scene_list, answer_value))
             model_process2.start()
         elif model_process2.is_alive():
             model_process2.terminate()
             model_process = multiprocessing.Process(target=analyse_img_process,
-                                                    args=(flag, img_data_list, scene_value, answer_value))
+                                                    args=(flag, img_data_list, scene_list, answer_value))
             model_process.start()
         else:
             model_process = multiprocessing.Process(target=analyse_img_process,
-                                                    args=(flag, img_data_list, scene_value, answer_value))
+                                                    args=(flag, img_data_list, scene_list, answer_value))
             model_process.start()
         # 再次初始化flag，避免进程中止缓慢篡改flag的value值
         flag.value = 0
         answer_value.value = ""
         img_data_list[:] = []
+        scene_list[:] = []
         trainImage = None
 
     @app.route('/')
@@ -124,6 +128,7 @@ def final_realize():
                 try:
                     # 将numpy数组转换为OpenCV的图像对象
                     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                    scene_list.append(predict_realize(img))
                     if flag.value == 1:
                         trainImage = img
                         img_data_list.extend(image_understanding(img))
