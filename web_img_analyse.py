@@ -9,6 +9,7 @@ from flask_socketio import SocketIO, emit
 import ctypes
 from p3_ImageUnderstanding import spark_chat, image_understanding
 from speech_synthesis import audio_generate
+from p3_match_and_stitcher import judge_equal_realize
 
 app = Flask(__name__)
 
@@ -18,7 +19,8 @@ restart = False
 model_process = multiprocessing.Process()
 model_process2 = multiprocessing.Process()
 # 添加到环境识别的最大图片数量
-max_img_num = 2
+max_img_num = 4
+trainImage = None
 
 
 def analyse_img_process(flag_, img_data_list_, scene_value_, answer_value_):
@@ -54,7 +56,7 @@ def final_realize():
 
     # 初始化各种参数并刷新进程
     def init():
-        global restart, temp, model_process, model_process2
+        global restart, temp, model_process, model_process2, trainImage
         # 更新restart标志，避免重复初始化
         restart = False
         # 更新temp时间标志，开始播报欢迎语音
@@ -80,6 +82,7 @@ def final_realize():
         flag.value = 0
         answer_value.value = ""
         img_data_list[:] = []
+        trainImage = None
 
     @app.route('/')
     def route_():
@@ -90,11 +93,14 @@ def final_realize():
     @app.route('/audio')
     def audio():
         filename = "output.mp3"  # 音频文件的路径
+        if flag.value == 1:
+            return send_file('welcome.mp3', mimetype='audio/mp3')
         return send_file(filename, mimetype='audio/mp3')  # 返回音频文件
 
     # 处理从前端传来的视频帧
     @app.route('/process_frame', methods=['GET', 'POST'])
     def process_frame():
+        global trainImage
         if restart:
             init()  # 重新开始
         # 2秒钟等待网页加载，然后播放欢迎音频
@@ -102,9 +108,6 @@ def final_realize():
             if flag.value == 0:
                 # 这里不使用+=是为了避免多次请求同时访问flag内存值时，其值不正常
                 flag.value = 1
-                save_audio(
-                    "欢迎使用视界之声环境识别。听到录像开始后请缓慢地转动镜头，总时长15秒，"
-                    "我将根据镜头画面识别当前环境。当画面重复时我会自动停止。录像开始")
                 # output会发送给前端，使前端向后端请求音频
                 return "audio_s"
         # 18秒等待欢饮音频播放完毕
@@ -121,9 +124,17 @@ def final_realize():
                 try:
                     # 将numpy数组转换为OpenCV的图像对象
                     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-                    img_data_list.extend(image_understanding(img))
-                    # 为避免多次访问使flag值不正常，使用min函数
-                    flag.value = min(flag.value + 1, max_img_num + 1)
+                    if flag.value == 1:
+                        trainImage = img
+                        img_data_list.extend(image_understanding(img))
+                        # 为避免多次访问使flag值不正常，使用min函数
+                        flag.value = min(flag.value + 1, max_img_num + 1)
+                    elif judge_equal_realize(img, trainImage):
+                        flag.value = max_img_num + 1
+                    else:
+                        img_data_list.extend(image_understanding(img))
+                        # 为避免多次访问使flag值不正常，使用min函数
+                        flag.value = min(flag.value + 1, max_img_num + 1)
                 except Exception:
                     pass
                 return "视界之声的回答：\n  "

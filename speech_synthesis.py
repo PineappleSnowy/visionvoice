@@ -120,5 +120,10 @@ def audio_generate(TEXT, file_prefix):
 
 
 if __name__ == "__main__":
-    audio_generate("欢迎使用视界之声环境识别。听到录像开始后请缓慢地转动镜头，总时长15秒，"
-                   "我将根据镜头画面识别当前环境。当画面重复时我会自动停止。录像开始")
+    # audio_generate("欢迎使用视界之声环境识别！听到录像开始后请缓慢地转动镜头，总时长24秒，"
+    #                "我将根据镜头画面识别当前环境。当画面重复时我会自动停止。录像开始", 'welcome')
+    audio_generate("向左", 'left')
+    audio_generate("向右", 'right')
+    audio_generate("向上", 'up')
+    audio_generate("向下", 'down')
+    audio_generate("看不到你", 'miss')

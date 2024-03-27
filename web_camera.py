@@ -5,16 +5,10 @@ from flask_cors import CORS
 import base64
 import numpy as np
 from flask_socketio import SocketIO, emit
-import edge_tts
 import multiprocessing
 from p3_shoot import detect_face
 
 app = Flask(__name__)
-
-
-async def save_audio(text):
-    tts = edge_tts.Communicate(text=text, voice='zh-CN-YunyangNeural')
-    await tts.save('output.mp3')
 
 
 def final_realize():
@@ -102,22 +96,21 @@ def final_realize():
 
     @app.route('/audio')
     def audio():
-        filename = "output.mp3"  # 音频文件的路径
         if welcome.value:  # 判断是否播放欢迎音频
             welcome.value = False
-            save_audio("欢迎使用视界之声智慧拍照")
+            filename = "start.mp3"
         elif success_an.value:
-            save_audio("拍照成功")
+            filename = "success.mp3"
         elif direction.value == 1:
-            save_audio("向右")
+            filename = "right.mp3"
         elif direction.value == 2:
-            save_audio("向左")
+            filename = "left.mp3"
         elif direction.value == 3:
-            save_audio("向上")
+            filename = "up.mp3"
         elif direction.value == 4:
-            save_audio("向下")
+            filename = "down.mp3"
         elif direction.value == -1:
-            save_audio("看不到你")
+            filename = "miss.mp3"
         else:
             return ""
         return send_file(filename, mimetype='audio/mp3')  # 返回音频文件
