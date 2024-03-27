@@ -117,7 +117,7 @@ def on_message(ws, message):
 
 def gen_params(appid_, question):
     """
-    通过appid和用户的提问来生成请参数
+    通过appid和用户的提问来生成请求参数
     """
     data = {
         "header": {
